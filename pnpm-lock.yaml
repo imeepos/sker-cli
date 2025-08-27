@@ -202,6 +202,9 @@ importers:
       '@sker/constants':
         specifier: workspace:*
         version: link:../constants
+      '@sker/core':
+        specifier: workspace:*
+        version: link:../core
       '@sker/error-core':
         specifier: workspace:*
         version: link:../error-core
@@ -294,6 +297,9 @@ importers:
       '@sker/constants':
         specifier: workspace:*
         version: link:../constants
+      '@sker/core':
+        specifier: workspace:*
+        version: link:../core
       '@sker/error-core':
         specifier: workspace:*
         version: link:../error-core
@@ -337,6 +343,9 @@ importers:
       '@sker/constants':
         specifier: workspace:*
         version: link:../constants
+      '@sker/core':
+        specifier: workspace:*
+        version: link:../core
       '@sker/error-core':
         specifier: workspace:*
         version: link:../error-core
