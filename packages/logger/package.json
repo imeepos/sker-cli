@@ -46,9 +46,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@sker/core": "workspace:*",
     "@sker/types": "workspace:*",
-    "@sker/constants": "workspace:*"
+    "@sker/constants": "workspace:*",
+    "@sker/error-core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

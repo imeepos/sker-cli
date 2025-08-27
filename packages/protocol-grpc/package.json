@@ -53,12 +53,6 @@
   },
   "dependencies": {
     "@sker/core": "workspace:*",
-    "@sker/types": "workspace:*",
-    "@sker/constants": "workspace:*",
-    "@sker/utils": "workspace:*",
-    "@sker/logger": "workspace:*",
-    "@sker/error-core": "workspace:*",
-    "@sker/protocol-ucp": "workspace:*",
     "@sker/serialization-protobuf": "workspace:*",
     "events": "^3.3.0"
   },

@@ -1,57 +1,68 @@
-import { ErrorCodes } from '../types/index.js';
+// 重新导出@sker/error-core中的错误处理功能
+import { SystemError as BaseSystemError, isSkerError, wrapError } from '@sker/error-core';
 
-export class SkerError extends Error {
-  public readonly code: ErrorCodes;
-  public readonly details: Record<string, any> | undefined;
-  public override readonly cause: Error | undefined;
+export { BaseSystemError as SystemError, isSkerError, wrapError };
 
+// 重新导出错误码
+export {
+  SYSTEM_ERROR_CODES,
+  CORE_ERROR_CODES,
+  type ErrorCode
+} from '@sker/constants';
+
+// 为了向后兼容，创建ErrorCodes枚举
+export const ErrorCodes = {
+  UNKNOWN: '100000',
+  INITIALIZATION_FAILED: '100006',
+  START_FAILED: '100007',
+  STOP_FAILED: '100008',
+  CONFIG_ERROR: '150001',
+  PLUGIN_ERROR: '150002',
+  CONTEXT_ERROR: '150003',
+  MIDDLEWARE_ERROR: '150004',
+  EVENT_ERROR: '150005'
+} as const;
+
+export type ErrorCodes = typeof ErrorCodes[keyof typeof ErrorCodes];
+
+// 为Core模块创建一个具体的错误类
+export class SkerError extends BaseSystemError {
+  // 确保message属性可访问
+  declare public readonly message: string;
+  
   constructor(
-    code: ErrorCodes = ErrorCodes.UNKNOWN,
+    code: string = ErrorCodes.UNKNOWN,
     message?: string,
-    details?: Record<string, any>,
+    details?: any[] | Record<string, any>,
     cause?: Error
   ) {
-    super(message || code);
-    this.name = 'SkerError';
-    this.code = code;
-    this.details = details;
-    this.cause = cause;
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, SkerError);
-    }
-  }
-
-  public toJSON(): Record<string, any> {
-    return {
-      name: this.name,
-      code: this.code,
-      message: this.message,
-      details: this.details,
-      stack: this.stack,
-      cause: this.cause?.message
-    };
-  }
-
-  public override toString(): string {
-    let result = `${this.name} [${this.code}]: ${this.message}`;
-
-    if (this.details) {
-      result += `\nDetails: ${JSON.stringify(this.details, null, 2)}`;
+    // 兼容处理不同的details格式
+    let formattedDetails: any[] = [];
+    if (Array.isArray(details)) {
+      formattedDetails = details;
+    } else if (details && typeof details === 'object') {
+      formattedDetails = [{ 
+        field: 'details', 
+        error_code: code, 
+        error_message: JSON.stringify(details)
+      }];
     }
 
-    if (this.cause) {
-      result += `\nCaused by: ${this.cause.message}`;
-    }
-
-    return result;
+    super({
+      code,
+      message: message || code,
+      details: formattedDetails,
+      originalError: cause,
+      context: {}
+    });
   }
 }
 
+// 为了向后兼容的函数别名
 export function createError(
-  code: ErrorCodes,
+  code: string,
   message?: string,
-  details?: Record<string, any>,
+  details?: any[] | Record<string, any>,
   cause?: Error
 ): SkerError {
   return new SkerError(code, message, details, cause);
@@ -60,21 +71,3 @@ export function createError(
 export function isError(error: any): error is Error {
   return error instanceof Error;
 }
-
-export function isSkerError(error: any): error is SkerError {
-  return error instanceof SkerError;
-}
-
-export function wrapError(error: unknown, code: ErrorCodes, message?: string): SkerError {
-  if (isSkerError(error)) {
-    return error;
-  }
-
-  if (isError(error)) {
-    return new SkerError(code, message || error.message, undefined, error);
-  }
-
-  return new SkerError(code, message || String(error));
-}
-
-export { ErrorCodes };

@@ -81,6 +81,22 @@ importers:
         version: 1.6.1(@types/node@20.19.11)
 
   packages/core:
+    dependencies:
+      '@sker/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@sker/error-core':
+        specifier: workspace:*
+        version: link:../error-core
+      '@sker/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@sker/types':
+        specifier: workspace:*
+        version: link:../types
+      '@sker/utils':
+        specifier: workspace:*
+        version: link:../utils
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -103,24 +119,12 @@ importers:
 
   packages/data-udef:
     dependencies:
-      '@sker/constants':
-        specifier: workspace:*
-        version: link:../constants
       '@sker/core':
         specifier: workspace:*
         version: link:../core
-      '@sker/error-core':
-        specifier: workspace:*
-        version: link:../error-core
-      '@sker/logger':
-        specifier: workspace:*
-        version: link:../logger
       '@sker/types':
         specifier: workspace:*
         version: link:../types
-      '@sker/utils':
-        specifier: workspace:*
-        version: link:../utils
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -177,9 +181,9 @@ importers:
       '@sker/constants':
         specifier: workspace:*
         version: link:../constants
-      '@sker/core':
+      '@sker/error-core':
         specifier: workspace:*
-        version: link:../core
+        version: link:../error-core
       '@sker/types':
         specifier: workspace:*
         version: link:../types
@@ -205,30 +209,12 @@ importers:
 
   packages/protocol-grpc:
     dependencies:
-      '@sker/constants':
-        specifier: workspace:*
-        version: link:../constants
       '@sker/core':
         specifier: workspace:*
         version: link:../core
-      '@sker/error-core':
-        specifier: workspace:*
-        version: link:../error-core
-      '@sker/logger':
-        specifier: workspace:*
-        version: link:../logger
-      '@sker/protocol-ucp':
-        specifier: workspace:*
-        version: link:../protocol-ucp
       '@sker/serialization-protobuf':
         specifier: workspace:*
         version: link:../serialization-protobuf
-      '@sker/types':
-        specifier: workspace:*
-        version: link:../types
-      '@sker/utils':
-        specifier: workspace:*
-        version: link:../utils
       events:
         specifier: ^3.3.0
         version: 3.3.0
@@ -254,30 +240,12 @@ importers:
 
   packages/protocol-http:
     dependencies:
-      '@sker/constants':
-        specifier: workspace:*
-        version: link:../constants
       '@sker/core':
         specifier: workspace:*
         version: link:../core
-      '@sker/error-core':
-        specifier: workspace:*
-        version: link:../error-core
-      '@sker/logger':
-        specifier: workspace:*
-        version: link:../logger
-      '@sker/protocol-ucp':
-        specifier: workspace:*
-        version: link:../protocol-ucp
       '@sker/serialization-json':
         specifier: workspace:*
         version: link:../serialization-json
-      '@sker/types':
-        specifier: workspace:*
-        version: link:../types
-      '@sker/utils':
-        specifier: workspace:*
-        version: link:../utils
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -303,24 +271,9 @@ importers:
 
   packages/protocol-ucp:
     dependencies:
-      '@sker/constants':
-        specifier: workspace:*
-        version: link:../constants
       '@sker/core':
         specifier: workspace:*
         version: link:../core
-      '@sker/error-core':
-        specifier: workspace:*
-        version: link:../error-core
-      '@sker/logger':
-        specifier: workspace:*
-        version: link:../logger
-      '@sker/types':
-        specifier: workspace:*
-        version: link:../types
-      '@sker/utils':
-        specifier: workspace:*
-        version: link:../utils
       ws:
         specifier: ^8.18.3
         version: 8.18.3
@@ -349,30 +302,12 @@ importers:
 
   packages/protocol-websocket:
     dependencies:
-      '@sker/constants':
-        specifier: workspace:*
-        version: link:../constants
       '@sker/core':
         specifier: workspace:*
         version: link:../core
-      '@sker/error-core':
-        specifier: workspace:*
-        version: link:../error-core
-      '@sker/logger':
-        specifier: workspace:*
-        version: link:../logger
-      '@sker/protocol-ucp':
-        specifier: workspace:*
-        version: link:../protocol-ucp
       '@sker/serialization-json':
         specifier: workspace:*
         version: link:../serialization-json
-      '@sker/types':
-        specifier: workspace:*
-        version: link:../types
-      '@sker/utils':
-        specifier: workspace:*
-        version: link:../utils
       ws:
         specifier: ^8.18.0
         version: 8.18.3
@@ -401,21 +336,12 @@ importers:
 
   packages/serialization-json:
     dependencies:
-      '@sker/constants':
+      '@sker/core':
         specifier: workspace:*
-        version: link:../constants
-      '@sker/error-core':
+        version: link:../core
+      '@sker/data-udef':
         specifier: workspace:*
-        version: link:../error-core
-      '@sker/logger':
-        specifier: workspace:*
-        version: link:../logger
-      '@sker/types':
-        specifier: workspace:*
-        version: link:../types
-      '@sker/utils':
-        specifier: workspace:*
-        version: link:../utils
+        version: link:../data-udef
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -438,21 +364,12 @@ importers:
 
   packages/serialization-protobuf:
     dependencies:
-      '@sker/constants':
+      '@sker/core':
         specifier: workspace:*
-        version: link:../constants
-      '@sker/error-core':
+        version: link:../core
+      '@sker/data-udef':
         specifier: workspace:*
-        version: link:../error-core
-      '@sker/logger':
-        specifier: workspace:*
-        version: link:../logger
-      '@sker/types':
-        specifier: workspace:*
-        version: link:../types
-      '@sker/utils':
-        specifier: workspace:*
-        version: link:../utils
+        version: link:../data-udef
       long:
         specifier: ^5.2.3
         version: 5.3.2

@@ -20,63 +20,63 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
-  CONFIG_CHANGE: () => CONFIG_CHANGE,
-  CONFIG_RESET: () => CONFIG_RESET,
-  CORE_CONFIG_CHANGE: () => CORE_CONFIG_CHANGE,
-  CORE_INITIALIZED: () => CORE_INITIALIZED,
-  CORE_MIDDLEWARE_ERROR: () => CORE_MIDDLEWARE_ERROR,
-  CORE_PLUGIN_ERROR: () => CORE_PLUGIN_ERROR,
-  CORE_RESTARTED: () => CORE_RESTARTED,
-  CORE_RESTARTING: () => CORE_RESTARTING,
-  CORE_RESTART_FAILED: () => CORE_RESTART_FAILED,
-  CORE_STARTED: () => CORE_STARTED,
-  CORE_STARTING: () => CORE_STARTING,
-  CORE_START_FAILED: () => CORE_START_FAILED,
-  CORE_STOPPED: () => CORE_STOPPED,
-  CORE_STOPPING: () => CORE_STOPPING,
-  CORE_STOP_FAILED: () => CORE_STOP_FAILED,
+  CONFIG_CHANGE: () => import_constants.CONFIG_CHANGE,
+  CONFIG_RESET: () => import_constants.CONFIG_RESET,
+  CORE_CONFIG_CHANGE: () => import_constants.CORE_CONFIG_CHANGE,
+  CORE_INITIALIZED: () => import_constants.CORE_INITIALIZED,
+  CORE_MIDDLEWARE_ERROR: () => import_constants.CORE_MIDDLEWARE_ERROR,
+  CORE_PLUGIN_ERROR: () => import_constants.CORE_PLUGIN_ERROR,
+  CORE_RESTARTED: () => import_constants.CORE_RESTARTED,
+  CORE_RESTARTING: () => import_constants.CORE_RESTARTING,
+  CORE_RESTART_FAILED: () => import_constants.CORE_RESTART_FAILED,
+  CORE_STARTED: () => import_constants.CORE_STARTED,
+  CORE_STARTING: () => import_constants.CORE_STARTING,
+  CORE_START_FAILED: () => import_constants.CORE_START_FAILED,
+  CORE_STOPPED: () => import_constants.CORE_STOPPED,
+  CORE_STOPPING: () => import_constants.CORE_STOPPING,
+  CORE_STOP_FAILED: () => import_constants.CORE_STOP_FAILED,
   ConfigManager: () => ConfigManager,
   Context: () => Context,
-  ERROR: () => ERROR,
+  ERROR: () => import_constants.ERROR,
   ErrorCodes: () => ErrorCodes,
   EventBus: () => EventBus,
-  LIFECYCLE_ERROR: () => LIFECYCLE_ERROR,
-  LIFECYCLE_HOOK_ERROR: () => LIFECYCLE_HOOK_ERROR,
-  LIFECYCLE_HOOK_EXECUTED: () => LIFECYCLE_HOOK_EXECUTED,
-  LIFECYCLE_HOOK_EXECUTING: () => LIFECYCLE_HOOK_EXECUTING,
-  LIFECYCLE_STARTED: () => LIFECYCLE_STARTED,
-  LIFECYCLE_STARTING: () => LIFECYCLE_STARTING,
-  LIFECYCLE_STATE_CHANGED: () => LIFECYCLE_STATE_CHANGED,
-  LIFECYCLE_STOPPED: () => LIFECYCLE_STOPPED,
-  LIFECYCLE_STOPPING: () => LIFECYCLE_STOPPING,
+  LIFECYCLE_ERROR: () => import_constants.LIFECYCLE_ERROR,
+  LIFECYCLE_HOOK_ERROR: () => import_constants.LIFECYCLE_HOOK_ERROR,
+  LIFECYCLE_HOOK_EXECUTED: () => import_constants.LIFECYCLE_HOOK_EXECUTED,
+  LIFECYCLE_HOOK_EXECUTING: () => import_constants.LIFECYCLE_HOOK_EXECUTING,
+  LIFECYCLE_STARTED: () => import_constants.LIFECYCLE_STARTED,
+  LIFECYCLE_STARTING: () => import_constants.LIFECYCLE_STARTING,
+  LIFECYCLE_STATE_CHANGED: () => import_constants.LIFECYCLE_STATE_CHANGED,
+  LIFECYCLE_STOPPED: () => import_constants.LIFECYCLE_STOPPED,
+  LIFECYCLE_STOPPING: () => import_constants.LIFECYCLE_STOPPING,
   LifecycleManager: () => LifecycleManager,
   LifecycleState: () => LifecycleState,
-  MEMORY_THRESHOLD_EXCEEDED: () => MEMORY_THRESHOLD_EXCEEDED,
-  MEMORY_USAGE: () => MEMORY_USAGE,
-  MIDDLEWARES_CLEARED: () => MIDDLEWARES_CLEARED,
-  MIDDLEWARE_ADDED: () => MIDDLEWARE_ADDED,
-  MIDDLEWARE_CHAIN_COMPLETED: () => MIDDLEWARE_CHAIN_COMPLETED,
-  MIDDLEWARE_CHAIN_FAILED: () => MIDDLEWARE_CHAIN_FAILED,
-  MIDDLEWARE_DISABLED: () => MIDDLEWARE_DISABLED,
-  MIDDLEWARE_ENABLED: () => MIDDLEWARE_ENABLED,
-  MIDDLEWARE_ERROR: () => MIDDLEWARE_ERROR,
-  MIDDLEWARE_EXECUTED: () => MIDDLEWARE_EXECUTED,
-  MIDDLEWARE_EXECUTING: () => MIDDLEWARE_EXECUTING,
-  MIDDLEWARE_INSERTED: () => MIDDLEWARE_INSERTED,
-  MIDDLEWARE_REMOVED: () => MIDDLEWARE_REMOVED,
-  MIDDLEWARE_TIMEOUT: () => MIDDLEWARE_TIMEOUT,
+  MEMORY_THRESHOLD_EXCEEDED: () => import_constants.MEMORY_THRESHOLD_EXCEEDED,
+  MEMORY_USAGE: () => import_constants.MEMORY_USAGE,
+  MIDDLEWARES_CLEARED: () => import_constants.MIDDLEWARES_CLEARED,
+  MIDDLEWARE_ADDED: () => import_constants.MIDDLEWARE_ADDED,
+  MIDDLEWARE_CHAIN_COMPLETED: () => import_constants.MIDDLEWARE_CHAIN_COMPLETED,
+  MIDDLEWARE_CHAIN_FAILED: () => import_constants.MIDDLEWARE_CHAIN_FAILED,
+  MIDDLEWARE_DISABLED: () => import_constants.MIDDLEWARE_DISABLED,
+  MIDDLEWARE_ENABLED: () => import_constants.MIDDLEWARE_ENABLED,
+  MIDDLEWARE_ERROR: () => import_constants.MIDDLEWARE_ERROR,
+  MIDDLEWARE_EXECUTED: () => import_constants.MIDDLEWARE_EXECUTED,
+  MIDDLEWARE_EXECUTING: () => import_constants.MIDDLEWARE_EXECUTING,
+  MIDDLEWARE_INSERTED: () => import_constants.MIDDLEWARE_INSERTED,
+  MIDDLEWARE_REMOVED: () => import_constants.MIDDLEWARE_REMOVED,
+  MIDDLEWARE_TIMEOUT: () => import_constants.MIDDLEWARE_TIMEOUT,
   MiddlewareManager: () => MiddlewareManager,
-  PLUGIN_CONFIG_UPDATED: () => PLUGIN_CONFIG_UPDATED,
-  PLUGIN_DESTROYED: () => PLUGIN_DESTROYED,
-  PLUGIN_DESTROYING: () => PLUGIN_DESTROYING,
-  PLUGIN_DISABLED: () => PLUGIN_DISABLED,
-  PLUGIN_ENABLED: () => PLUGIN_ENABLED,
-  PLUGIN_ERROR: () => PLUGIN_ERROR,
-  PLUGIN_INITIALIZED: () => PLUGIN_INITIALIZED,
-  PLUGIN_INITIALIZING: () => PLUGIN_INITIALIZING,
-  PLUGIN_REGISTERED: () => PLUGIN_REGISTERED,
-  PLUGIN_SKIPPED: () => PLUGIN_SKIPPED,
-  PLUGIN_UNREGISTERED: () => PLUGIN_UNREGISTERED,
+  PLUGIN_CONFIG_UPDATED: () => import_constants.PLUGIN_CONFIG_UPDATED,
+  PLUGIN_DESTROYED: () => import_constants.PLUGIN_DESTROYED,
+  PLUGIN_DESTROYING: () => import_constants.PLUGIN_DESTROYING,
+  PLUGIN_DISABLED: () => import_constants.PLUGIN_DISABLED,
+  PLUGIN_ENABLED: () => import_constants.PLUGIN_ENABLED,
+  PLUGIN_ERROR: () => import_constants.PLUGIN_ERROR,
+  PLUGIN_INITIALIZED: () => import_constants.PLUGIN_INITIALIZED,
+  PLUGIN_INITIALIZING: () => import_constants.PLUGIN_INITIALIZING,
+  PLUGIN_REGISTERED: () => import_constants.PLUGIN_REGISTERED,
+  PLUGIN_SKIPPED: () => import_constants.PLUGIN_SKIPPED,
+  PLUGIN_UNREGISTERED: () => import_constants.PLUGIN_UNREGISTERED,
   PluginManager: () => PluginManager,
   SkerCore: () => SkerCore,
   SkerError: () => SkerError,
@@ -84,113 +84,49 @@ __export(index_exports, {
   ensureContext: () => ensureContext,
   getCurrentContext: () => getCurrentContext,
   isError: () => isError,
-  isSkerError: () => isSkerError,
+  isSkerError: () => import_error_core.isSkerError,
   withContext: () => withContext,
   withCurrentContext: () => withCurrentContext,
-  wrapError: () => wrapError
+  wrapError: () => import_error_core.wrapError
 });
 module.exports = __toCommonJS(index_exports);
 
 // src/types/index.ts
-var ErrorCodes = /* @__PURE__ */ ((ErrorCodes2) => {
-  ErrorCodes2["UNKNOWN"] = "UNKNOWN";
-  ErrorCodes2["INITIALIZATION_FAILED"] = "INITIALIZATION_FAILED";
-  ErrorCodes2["START_FAILED"] = "START_FAILED";
-  ErrorCodes2["STOP_FAILED"] = "STOP_FAILED";
-  ErrorCodes2["CONFIG_ERROR"] = "CONFIG_ERROR";
-  ErrorCodes2["PLUGIN_ERROR"] = "PLUGIN_ERROR";
-  ErrorCodes2["CONTEXT_ERROR"] = "CONTEXT_ERROR";
-  ErrorCodes2["MIDDLEWARE_ERROR"] = "MIDDLEWARE_ERROR";
-  ErrorCodes2["EVENT_ERROR"] = "EVENT_ERROR";
-  return ErrorCodes2;
-})(ErrorCodes || {});
-var ERROR = `ERROR`;
-var MEMORY_USAGE = `MEMORY_USAGE`;
-var MEMORY_THRESHOLD_EXCEEDED = `memoryThresholdExceeded`;
-var LIFECYCLE_ERROR = `lifecycleError`;
-var CONFIG_CHANGE = `change`;
-var CONFIG_RESET = `reset`;
-var LIFECYCLE_STARTING = `starting`;
-var LIFECYCLE_STARTED = `started`;
-var LIFECYCLE_STOPPING = `stopping`;
-var LIFECYCLE_STOPPED = `stopped`;
-var LIFECYCLE_STATE_CHANGED = `stateChanged`;
-var LIFECYCLE_HOOK_EXECUTING = `hookExecuting`;
-var LIFECYCLE_HOOK_EXECUTED = `hookExecuted`;
-var LIFECYCLE_HOOK_ERROR = `hookError`;
-var MIDDLEWARE_ADDED = `middlewareAdded`;
-var MIDDLEWARE_REMOVED = `middlewareRemoved`;
-var MIDDLEWARE_ENABLED = `middlewareEnabled`;
-var MIDDLEWARE_DISABLED = `middlewareDisabled`;
-var MIDDLEWARES_CLEARED = `middlewaresCleared`;
-var MIDDLEWARE_EXECUTING = `middlewareExecuting`;
-var MIDDLEWARE_EXECUTED = `middlewareExecuted`;
-var MIDDLEWARE_ERROR = `middlewareError`;
-var MIDDLEWARE_CHAIN_COMPLETED = `middlewareChainCompleted`;
-var MIDDLEWARE_CHAIN_FAILED = `middlewareChainFailed`;
-var MIDDLEWARE_TIMEOUT = `middlewareTimeout`;
-var MIDDLEWARE_INSERTED = `middlewareInserted`;
-var PLUGIN_REGISTERED = `pluginRegistered`;
-var PLUGIN_UNREGISTERED = `pluginUnregistered`;
-var PLUGIN_SKIPPED = `pluginSkipped`;
-var PLUGIN_INITIALIZING = `pluginInitializing`;
-var PLUGIN_INITIALIZED = `pluginInitialized`;
-var PLUGIN_ERROR = `pluginError`;
-var PLUGIN_DESTROYING = `pluginDestroying`;
-var PLUGIN_DESTROYED = `pluginDestroyed`;
-var PLUGIN_ENABLED = `pluginEnabled`;
-var PLUGIN_DISABLED = `pluginDisabled`;
-var PLUGIN_CONFIG_UPDATED = `pluginConfigUpdated`;
-var CORE_INITIALIZED = `initialized`;
-var CORE_STARTING = `starting`;
-var CORE_STARTED = `started`;
-var CORE_START_FAILED = `startFailed`;
-var CORE_STOPPING = `stopping`;
-var CORE_STOPPED = `stopped`;
-var CORE_STOP_FAILED = `stopFailed`;
-var CORE_RESTARTING = `restarting`;
-var CORE_RESTARTED = `restarted`;
-var CORE_RESTART_FAILED = `restartFailed`;
-var CORE_PLUGIN_ERROR = `pluginError`;
-var CORE_MIDDLEWARE_ERROR = `middlewareError`;
-var CORE_CONFIG_CHANGE = `configChange`;
+var import_constants = require("@sker/constants");
 
 // src/errors/index.ts
-var SkerError = class _SkerError extends Error {
-  code;
-  details;
-  cause;
-  constructor(code = "UNKNOWN" /* UNKNOWN */, message, details, cause) {
-    super(message || code);
-    this.name = "SkerError";
-    this.code = code;
-    this.details = details;
-    this.cause = cause;
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, _SkerError);
+var import_error_core = require("@sker/error-core");
+var import_constants2 = require("@sker/constants");
+var ErrorCodes = {
+  UNKNOWN: "100000",
+  INITIALIZATION_FAILED: "100006",
+  START_FAILED: "100007",
+  STOP_FAILED: "100008",
+  CONFIG_ERROR: "150001",
+  PLUGIN_ERROR: "150002",
+  CONTEXT_ERROR: "150003",
+  MIDDLEWARE_ERROR: "150004",
+  EVENT_ERROR: "150005"
+};
+var SkerError = class extends import_error_core.SystemError {
+  constructor(code = ErrorCodes.UNKNOWN, message, details, cause) {
+    let formattedDetails = [];
+    if (Array.isArray(details)) {
+      formattedDetails = details;
+    } else if (details && typeof details === "object") {
+      formattedDetails = [{
+        field: "details",
+        error_code: code,
+        error_message: JSON.stringify(details)
+      }];
     }
-  }
-  toJSON() {
-    return {
-      name: this.name,
-      code: this.code,
-      message: this.message,
-      details: this.details,
-      stack: this.stack,
-      cause: this.cause?.message
-    };
-  }
-  toString() {
-    let result = `${this.name} [${this.code}]: ${this.message}`;
-    if (this.details) {
-      result += `
-Details: ${JSON.stringify(this.details, null, 2)}`;
-    }
-    if (this.cause) {
-      result += `
-Caused by: ${this.cause.message}`;
-    }
-    return result;
+    super({
+      code,
+      message: message || code,
+      details: formattedDetails,
+      originalError: cause,
+      context: {}
+    });
   }
 };
 function createError(code, message, details, cause) {
@@ -198,18 +134,6 @@ function createError(code, message, details, cause) {
 }
 function isError(error) {
   return error instanceof Error;
-}
-function isSkerError(error) {
-  return error instanceof SkerError;
-}
-function wrapError(error, code, message) {
-  if (isSkerError(error)) {
-    return error;
-  }
-  if (isError(error)) {
-    return new SkerError(code, message || error.message, void 0, error);
-  }
-  return new SkerError(code, message || String(error));
 }
 
 // src/events/index.ts
@@ -220,7 +144,7 @@ var EventBus = class {
   on(event, handler) {
     if (!event || typeof handler !== "function") {
       throw new SkerError(
-        "EVENT_ERROR" /* EVENT_ERROR */,
+        ErrorCodes.EVENT_ERROR,
         "Event name and handler are required"
       );
     }
@@ -238,7 +162,7 @@ var EventBus = class {
   once(event, handler) {
     if (!event || typeof handler !== "function") {
       throw new SkerError(
-        "EVENT_ERROR" /* EVENT_ERROR */,
+        ErrorCodes.EVENT_ERROR,
         "Event name and handler are required"
       );
     }
@@ -249,7 +173,7 @@ var EventBus = class {
   }
   off(event, handler) {
     if (!event) {
-      throw new SkerError("EVENT_ERROR" /* EVENT_ERROR */, "Event name is required");
+      throw new SkerError(ErrorCodes.EVENT_ERROR, "Event name is required");
     }
     if (handler) {
       const handlers = this.listeners.get(event);
@@ -273,7 +197,7 @@ var EventBus = class {
   }
   emit(event, data) {
     if (!event) {
-      throw new SkerError("EVENT_ERROR" /* EVENT_ERROR */, "Event name is required");
+      throw new SkerError(ErrorCodes.EVENT_ERROR, "Event name is required");
     }
     const handlers = this.listeners.get(event);
     const onceHandlers = this.onceListeners.get(event);
@@ -310,7 +234,7 @@ var EventBus = class {
   }
   async emitAsync(event, data) {
     if (!event) {
-      throw new SkerError("EVENT_ERROR" /* EVENT_ERROR */, "Event name is required");
+      throw new SkerError(ErrorCodes.EVENT_ERROR, "Event name is required");
     }
     const handlers = this.listeners.get(event);
     const onceHandlers = this.onceListeners.get(event);
@@ -341,7 +265,7 @@ var EventBus = class {
       await Promise.all(promises);
     } catch (error) {
       throw new SkerError(
-        "EVENT_ERROR" /* EVENT_ERROR */,
+        ErrorCodes.EVENT_ERROR,
         `Error emitting async event "${event}"`,
         { event, data },
         error
@@ -372,7 +296,7 @@ var EventBus = class {
   setMaxListeners(n) {
     if (n < 0 || !Number.isInteger(n)) {
       throw new SkerError(
-        "EVENT_ERROR" /* EVENT_ERROR */,
+        ErrorCodes.EVENT_ERROR,
         "maxListeners must be a non-negative integer"
       );
     }
@@ -387,7 +311,7 @@ var EventBus = class {
   handleError(error, event) {
     console.error(`EventBus error in event "${event}":`, error);
     if (this.listenerCount("error") > 0) {
-      this.emit(ERROR, { error, event });
+      this.emit(import_constants.ERROR, { error, event });
     }
   }
 };
@@ -415,7 +339,7 @@ var ConfigManager = class extends EventBus {
     const oldValue = this.get(key);
     this.setNestedValue(this.config, key, value);
     if (oldValue !== value) {
-      this.emit(CONFIG_CHANGE, { key, value, oldValue });
+      this.emit(import_constants.CONFIG_CHANGE, { key, value, oldValue });
       this.notifyWatchers(key, value);
     }
   }
@@ -426,7 +350,7 @@ var ConfigManager = class extends EventBus {
     if (this.has(key)) {
       const oldValue = this.get(key);
       this.deleteNestedValue(this.config, key);
-      this.emit(CONFIG_CHANGE, { key, value: void 0, oldValue });
+      this.emit(import_constants.CONFIG_CHANGE, { key, value: void 0, oldValue });
       this.notifyWatchers(key, void 0);
       return true;
     }
@@ -439,7 +363,7 @@ var ConfigManager = class extends EventBus {
     const oldConfig = { ...this.config };
     this.config = {};
     this.loadConfig();
-    this.emit(CONFIG_RESET, { oldConfig, newConfig: this.config });
+    this.emit(import_constants.CONFIG_RESET, { oldConfig, newConfig: this.config });
   }
   onChange(key, handler) {
     if (!this.watchers.has(key)) {
@@ -467,7 +391,7 @@ var ConfigManager = class extends EventBus {
       return true;
     } catch (error) {
       throw new SkerError(
-        "CONFIG_ERROR" /* CONFIG_ERROR */,
+        ErrorCodes.CONFIG_ERROR,
         "Configuration validation failed",
         { config: this.getAll() },
         error
@@ -482,7 +406,7 @@ var ConfigManager = class extends EventBus {
       this.validate();
     } catch (error) {
       throw new SkerError(
-        "CONFIG_ERROR" /* CONFIG_ERROR */,
+        ErrorCodes.CONFIG_ERROR,
         "Failed to load configuration",
         { sources: this.sources },
         error
@@ -503,7 +427,7 @@ var ConfigManager = class extends EventBus {
           break;
         default:
           throw new SkerError(
-            "CONFIG_ERROR" /* CONFIG_ERROR */,
+            ErrorCodes.CONFIG_ERROR,
             `Unsupported config source type: ${source.type}`
           );
       }
@@ -522,7 +446,7 @@ var ConfigManager = class extends EventBus {
   }
   loadFromFile(filePath) {
     if (!filePath) {
-      throw new SkerError("CONFIG_ERROR" /* CONFIG_ERROR */, "File path is required for file source");
+      throw new SkerError(ErrorCodes.CONFIG_ERROR, "File path is required for file source");
     }
     try {
       const fullPath = (0, import_path.join)(process.cwd(), filePath);
@@ -531,14 +455,14 @@ var ConfigManager = class extends EventBus {
       if (filePath.endsWith(".json")) {
         parsed = JSON.parse(content);
       } else if (filePath.endsWith(".js") || filePath.endsWith(".mjs")) {
-        throw new SkerError("CONFIG_ERROR" /* CONFIG_ERROR */, "JavaScript config files not supported yet");
+        throw new SkerError(ErrorCodes.CONFIG_ERROR, "JavaScript config files not supported yet");
       } else {
-        throw new SkerError("CONFIG_ERROR" /* CONFIG_ERROR */, "Unsupported config file format");
+        throw new SkerError(ErrorCodes.CONFIG_ERROR, "Unsupported config file format");
       }
       Object.assign(this.config, parsed);
     } catch (error) {
       throw new SkerError(
-        "CONFIG_ERROR" /* CONFIG_ERROR */,
+        ErrorCodes.CONFIG_ERROR,
         `Failed to load config from file: ${filePath}`,
         { filePath },
         error
@@ -547,7 +471,7 @@ var ConfigManager = class extends EventBus {
   }
   loadFromRemote(url) {
     if (!url) {
-      throw new SkerError("CONFIG_ERROR" /* CONFIG_ERROR */, "URL is required for remote source");
+      throw new SkerError(ErrorCodes.CONFIG_ERROR, "URL is required for remote source");
     }
     console.warn("Remote config loading not implemented yet");
   }
@@ -659,7 +583,7 @@ var LifecycleManager = class extends EventBus {
   }
   onStart(handler, options) {
     if (typeof handler !== "function") {
-      throw new SkerError("INITIALIZATION_FAILED" /* INITIALIZATION_FAILED */, "Start handler must be a function");
+      throw new SkerError(ErrorCodes.INITIALIZATION_FAILED, "Start handler must be a function");
     }
     this.startHooks.push({
       handler,
@@ -669,7 +593,7 @@ var LifecycleManager = class extends EventBus {
   }
   onStop(handler, options) {
     if (typeof handler !== "function") {
-      throw new SkerError("INITIALIZATION_FAILED" /* INITIALIZATION_FAILED */, "Stop handler must be a function");
+      throw new SkerError(ErrorCodes.INITIALIZATION_FAILED, "Stop handler must be a function");
     }
     this.stopHooks.unshift({
       handler,
@@ -686,7 +610,7 @@ var LifecycleManager = class extends EventBus {
     }
     if (this.state !== "created" /* CREATED */ && this.state !== "stopped" /* STOPPED */) {
       throw new SkerError(
-        "START_FAILED" /* START_FAILED */,
+        ErrorCodes.START_FAILED,
         `Cannot start from state: ${this.state}`
       );
     }
@@ -702,7 +626,7 @@ var LifecycleManager = class extends EventBus {
     }
     if (this.state !== "started" /* STARTED */) {
       throw new SkerError(
-        "STOP_FAILED" /* STOP_FAILED */,
+        ErrorCodes.STOP_FAILED,
         `Cannot stop from state: ${this.state}`
       );
     }
@@ -734,17 +658,17 @@ var LifecycleManager = class extends EventBus {
   async doStart() {
     try {
       this.setState("starting" /* STARTING */);
-      this.emit(LIFECYCLE_STARTING, {});
+      this.emit(import_constants.LIFECYCLE_STARTING, {});
       for (const hook of this.startHooks) {
         await this.executeHook(hook, "start");
       }
       this.setState("started" /* STARTED */);
-      this.emit(LIFECYCLE_STARTED, {});
+      this.emit(import_constants.LIFECYCLE_STARTED, {});
     } catch (error) {
       this.setState("error" /* ERROR */);
-      this.emit(ERROR, { error, event: LIFECYCLE_STARTING });
+      this.emit(import_constants.ERROR, { error, event: import_constants.LIFECYCLE_STARTING });
       throw new SkerError(
-        "START_FAILED" /* START_FAILED */,
+        ErrorCodes.START_FAILED,
         "Failed to start lifecycle",
         { state: this.state },
         error
@@ -754,17 +678,17 @@ var LifecycleManager = class extends EventBus {
   async doStop() {
     try {
       this.setState("stopping" /* STOPPING */);
-      this.emit(LIFECYCLE_STOPPING, {});
+      this.emit(import_constants.LIFECYCLE_STOPPING, {});
       for (const hook of this.stopHooks) {
         await this.executeHook(hook, "stop");
       }
       this.setState("stopped" /* STOPPED */);
-      this.emit(LIFECYCLE_STOPPED, {});
+      this.emit(import_constants.LIFECYCLE_STOPPED, {});
     } catch (error) {
       this.setState("error" /* ERROR */);
-      this.emit(ERROR, { error, event: LIFECYCLE_STOPPING });
+      this.emit(import_constants.ERROR, { error, event: import_constants.LIFECYCLE_STOPPING });
       throw new SkerError(
-        "STOP_FAILED" /* STOP_FAILED */,
+        ErrorCodes.STOP_FAILED,
         "Failed to stop lifecycle",
         { state: this.state },
         error
@@ -775,16 +699,16 @@ var LifecycleManager = class extends EventBus {
     const hookName = hook.name || `anonymous-${phase}-hook`;
     const timeout = hook.timeout || (phase === "start" ? this.options.startTimeout : this.options.stopTimeout);
     try {
-      this.emit(LIFECYCLE_HOOK_EXECUTING, { name: hookName, phase });
+      this.emit(import_constants.LIFECYCLE_HOOK_EXECUTING, { name: hookName, phase });
       await Promise.race([
         hook.handler(),
         this.createTimeoutPromise(timeout, hookName, phase)
       ]);
-      this.emit(LIFECYCLE_HOOK_EXECUTED, { name: hookName, phase });
+      this.emit(import_constants.LIFECYCLE_HOOK_EXECUTED, { name: hookName, phase });
     } catch (error) {
-      this.emit(LIFECYCLE_HOOK_ERROR, { name: hookName, phase, error });
+      this.emit(import_constants.LIFECYCLE_HOOK_ERROR, { name: hookName, phase, error });
       throw new SkerError(
-        phase === "start" ? "START_FAILED" /* START_FAILED */ : "STOP_FAILED" /* STOP_FAILED */,
+        phase === "start" ? ErrorCodes.START_FAILED : ErrorCodes.STOP_FAILED,
         `${phase} hook "${hookName}" failed`,
         { hookName, phase, timeout },
         error
@@ -795,7 +719,7 @@ var LifecycleManager = class extends EventBus {
     return new Promise((_, reject) => {
       setTimeout(() => {
         reject(new SkerError(
-          phase === "start" ? "START_FAILED" /* START_FAILED */ : "STOP_FAILED" /* STOP_FAILED */,
+          phase === "start" ? ErrorCodes.START_FAILED : ErrorCodes.STOP_FAILED,
           `${phase} hook "${hookName}" timed out after ${timeout}ms`
         ));
       }, timeout);
@@ -804,7 +728,7 @@ var LifecycleManager = class extends EventBus {
   setState(newState) {
     const oldState = this.state;
     this.state = newState;
-    this.emit(LIFECYCLE_STATE_CHANGED, { oldState, newState });
+    this.emit(import_constants.LIFECYCLE_STATE_CHANGED, { oldState, newState });
   }
   setupGracefulShutdown() {
     const signals = ["SIGINT", "SIGTERM"];
@@ -854,17 +778,17 @@ var PluginManager = class extends EventBus {
   }
   register(name, plugin, config = { name }) {
     if (!name) {
-      throw new SkerError("PLUGIN_ERROR" /* PLUGIN_ERROR */, "Plugin name is required");
+      throw new SkerError(ErrorCodes.PLUGIN_ERROR, "Plugin name is required");
     }
     if (!plugin || typeof plugin.initialize !== "function") {
       throw new SkerError(
-        "PLUGIN_ERROR" /* PLUGIN_ERROR */,
+        ErrorCodes.PLUGIN_ERROR,
         "Plugin must have an initialize method"
       );
     }
     if (this.plugins.has(name)) {
       throw new SkerError(
-        "PLUGIN_ERROR" /* PLUGIN_ERROR */,
+        ErrorCodes.PLUGIN_ERROR,
         `Plugin "${name}" is already registered`
       );
     }
@@ -879,7 +803,7 @@ var PluginManager = class extends EventBus {
       context,
       initialized: false
     });
-    this.emit(PLUGIN_REGISTERED, { name, plugin, config });
+    this.emit(import_constants.PLUGIN_REGISTERED, { name, plugin, config });
   }
   unregister(name) {
     const pluginInstance = this.plugins.get(name);
@@ -888,35 +812,35 @@ var PluginManager = class extends EventBus {
     }
     if (pluginInstance.initialized) {
       throw new SkerError(
-        "PLUGIN_ERROR" /* PLUGIN_ERROR */,
+        ErrorCodes.PLUGIN_ERROR,
         `Cannot unregister initialized plugin "${name}". Destroy it first.`
       );
     }
     this.plugins.delete(name);
-    this.emit(PLUGIN_UNREGISTERED, { name });
+    this.emit(import_constants.PLUGIN_UNREGISTERED, { name });
   }
   async initialize(name) {
     const pluginInstance = this.plugins.get(name);
     if (!pluginInstance) {
-      throw new SkerError("PLUGIN_ERROR" /* PLUGIN_ERROR */, `Plugin "${name}" not found`);
+      throw new SkerError(ErrorCodes.PLUGIN_ERROR, `Plugin "${name}" not found`);
     }
     if (pluginInstance.initialized) {
       return;
     }
     if (pluginInstance.config.enabled === false) {
-      this.emit(PLUGIN_SKIPPED, { name, reason: "disabled" });
+      this.emit(import_constants.PLUGIN_SKIPPED, { name, reason: "disabled" });
       return;
     }
     try {
-      this.emit(PLUGIN_INITIALIZING, { name });
+      this.emit(import_constants.PLUGIN_INITIALIZING, { name });
       pluginInstance.instance = await pluginInstance.plugin.initialize(pluginInstance.context);
       pluginInstance.initialized = true;
       this.initializationOrder.push(name);
-      this.emit(PLUGIN_INITIALIZED, { name });
+      this.emit(import_constants.PLUGIN_INITIALIZED, { name });
     } catch (error) {
-      this.emit(PLUGIN_ERROR, { name, error, phase: "initialize" });
+      this.emit(import_constants.PLUGIN_ERROR, { name, error, phase: "initialize" });
       throw new SkerError(
-        "PLUGIN_ERROR" /* PLUGIN_ERROR */,
+        ErrorCodes.PLUGIN_ERROR,
         `Failed to initialize plugin "${name}"`,
         { name },
         error
@@ -935,7 +859,7 @@ var PluginManager = class extends EventBus {
     }
     if (errors.length > 0) {
       throw new SkerError(
-        "PLUGIN_ERROR" /* PLUGIN_ERROR */,
+        ErrorCodes.PLUGIN_ERROR,
         `Failed to initialize ${errors.length} plugin(s)`,
         { errors: errors.map((e) => ({ name: e.name, message: e.error.message })) }
       );
@@ -947,7 +871,7 @@ var PluginManager = class extends EventBus {
       return;
     }
     try {
-      this.emit(PLUGIN_DESTROYING, { name });
+      this.emit(import_constants.PLUGIN_DESTROYING, { name });
       if (typeof pluginInstance.plugin.destroy === "function") {
         await pluginInstance.plugin.destroy();
       }
@@ -957,11 +881,11 @@ var PluginManager = class extends EventBus {
       if (index >= 0) {
         this.initializationOrder.splice(index, 1);
       }
-      this.emit(PLUGIN_DESTROYED, { name });
+      this.emit(import_constants.PLUGIN_DESTROYED, { name });
     } catch (error) {
-      this.emit(PLUGIN_ERROR, { name, error, phase: "destroy" });
+      this.emit(import_constants.PLUGIN_ERROR, { name, error, phase: "destroy" });
       throw new SkerError(
-        "PLUGIN_ERROR" /* PLUGIN_ERROR */,
+        ErrorCodes.PLUGIN_ERROR,
         `Failed to destroy plugin "${name}"`,
         { name },
         error
@@ -980,7 +904,7 @@ var PluginManager = class extends EventBus {
     }
     if (errors.length > 0) {
       throw new SkerError(
-        "PLUGIN_ERROR" /* PLUGIN_ERROR */,
+        ErrorCodes.PLUGIN_ERROR,
         `Failed to destroy ${errors.length} plugin(s)`,
         { errors: errors.map((e) => ({ name: e.name, message: e.error.message })) }
       );
@@ -1023,7 +947,7 @@ var PluginManager = class extends EventBus {
   async enable(name) {
     const pluginInstance = this.plugins.get(name);
     if (!pluginInstance) {
-      throw new SkerError("PLUGIN_ERROR" /* PLUGIN_ERROR */, `Plugin "${name}" not found`);
+      throw new SkerError(ErrorCodes.PLUGIN_ERROR, `Plugin "${name}" not found`);
     }
     if (pluginInstance.config.enabled !== false) {
       return;
@@ -1032,12 +956,12 @@ var PluginManager = class extends EventBus {
     if (!pluginInstance.initialized) {
       await this.initialize(name);
     }
-    this.emit(PLUGIN_ENABLED, { name });
+    this.emit(import_constants.PLUGIN_ENABLED, { name });
   }
   async disable(name) {
     const pluginInstance = this.plugins.get(name);
     if (!pluginInstance) {
-      throw new SkerError("PLUGIN_ERROR" /* PLUGIN_ERROR */, `Plugin "${name}" not found`);
+      throw new SkerError(ErrorCodes.PLUGIN_ERROR, `Plugin "${name}" not found`);
     }
     if (pluginInstance.config.enabled === false) {
       return;
@@ -1046,17 +970,17 @@ var PluginManager = class extends EventBus {
       await this.destroy(name);
     }
     pluginInstance.config.enabled = false;
-    this.emit(PLUGIN_DISABLED, { name });
+    this.emit(import_constants.PLUGIN_DISABLED, { name });
   }
   updatePluginConfig(name, config) {
     const pluginInstance = this.plugins.get(name);
     if (!pluginInstance) {
-      throw new SkerError("PLUGIN_ERROR" /* PLUGIN_ERROR */, `Plugin "${name}" not found`);
+      throw new SkerError(ErrorCodes.PLUGIN_ERROR, `Plugin "${name}" not found`);
     }
     const oldConfig = { ...pluginInstance.context.config };
     pluginInstance.context.config = { ...pluginInstance.context.config, ...config };
     pluginInstance.config.options = { ...pluginInstance.config.options, ...config };
-    this.emit(PLUGIN_CONFIG_UPDATED, { name, oldConfig, newConfig: pluginInstance.context.config });
+    this.emit(import_constants.PLUGIN_CONFIG_UPDATED, { name, oldConfig, newConfig: pluginInstance.context.config });
   }
 };
 
@@ -1067,7 +991,7 @@ var MiddlewareManager = class extends EventBus {
   use(handler, options) {
     if (typeof handler !== "function") {
       throw new SkerError(
-        "MIDDLEWARE_ERROR" /* MIDDLEWARE_ERROR */,
+        ErrorCodes.MIDDLEWARE_ERROR,
         "Middleware handler must be a function"
       );
     }
@@ -1079,7 +1003,7 @@ var MiddlewareManager = class extends EventBus {
     };
     this.middlewares.push(middleware);
     this.sorted = false;
-    this.emit(MIDDLEWARE_ADDED, { middleware });
+    this.emit(import_constants.MIDDLEWARE_ADDED, { middleware });
   }
   remove(nameOrHandler) {
     const index = this.middlewares.findIndex(
@@ -1087,7 +1011,7 @@ var MiddlewareManager = class extends EventBus {
     );
     if (index >= 0) {
       const removed = this.middlewares.splice(index, 1)[0];
-      this.emit(MIDDLEWARE_REMOVED, { middleware: removed });
+      this.emit(import_constants.MIDDLEWARE_REMOVED, { middleware: removed });
       return true;
     }
     return false;
@@ -1096,7 +1020,7 @@ var MiddlewareManager = class extends EventBus {
     const middleware = this.middlewares.find((mw) => mw.name === name);
     if (middleware) {
       middleware.enabled = true;
-      this.emit(MIDDLEWARE_ENABLED, { name });
+      this.emit(import_constants.MIDDLEWARE_ENABLED, { name });
       return true;
     }
     return false;
@@ -1105,7 +1029,7 @@ var MiddlewareManager = class extends EventBus {
     const middleware = this.middlewares.find((mw) => mw.name === name);
     if (middleware) {
       middleware.enabled = false;
-      this.emit(MIDDLEWARE_DISABLED, { name });
+      this.emit(import_constants.MIDDLEWARE_DISABLED, { name });
       return true;
     }
     return false;
@@ -1114,7 +1038,7 @@ var MiddlewareManager = class extends EventBus {
     const count = this.middlewares.length;
     this.middlewares = [];
     this.sorted = true;
-    this.emit(MIDDLEWARES_CLEARED, { count });
+    this.emit(import_constants.MIDDLEWARES_CLEARED, { count });
   }
   async execute(context) {
     const enabledMiddlewares = this.getEnabledMiddlewares();
@@ -1130,14 +1054,14 @@ var MiddlewareManager = class extends EventBus {
       const middleware = enabledMiddlewares[currentIndex++];
       const middlewareName = middleware.name || `anonymous-${currentIndex}`;
       try {
-        this.emit(MIDDLEWARE_EXECUTING, { name: middlewareName, context });
+        this.emit(import_constants.MIDDLEWARE_EXECUTING, { name: middlewareName, context });
         executedMiddlewares.push(middlewareName);
         await middleware.handler(context, next);
-        this.emit(MIDDLEWARE_EXECUTED, { name: middlewareName, context });
+        this.emit(import_constants.MIDDLEWARE_EXECUTED, { name: middlewareName, context });
       } catch (error) {
-        this.emit(MIDDLEWARE_ERROR, { name: middlewareName, error, context });
+        this.emit(import_constants.MIDDLEWARE_ERROR, { name: middlewareName, error, context });
         throw new SkerError(
-          "MIDDLEWARE_ERROR" /* MIDDLEWARE_ERROR */,
+          ErrorCodes.MIDDLEWARE_ERROR,
           `Middleware "${middlewareName}" failed`,
           { middlewareName, executedMiddlewares },
           error
@@ -1146,9 +1070,9 @@ var MiddlewareManager = class extends EventBus {
     };
     try {
       await next();
-      this.emit(MIDDLEWARE_CHAIN_COMPLETED, { executedMiddlewares, context });
+      this.emit(import_constants.MIDDLEWARE_CHAIN_COMPLETED, { executedMiddlewares, context });
     } catch (error) {
-      this.emit(MIDDLEWARE_CHAIN_FAILED, { error, executedMiddlewares, context });
+      this.emit(import_constants.MIDDLEWARE_CHAIN_FAILED, { error, executedMiddlewares, context });
       throw error;
     }
   }
@@ -1156,7 +1080,7 @@ var MiddlewareManager = class extends EventBus {
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
         reject(new SkerError(
-          "MIDDLEWARE_ERROR" /* MIDDLEWARE_ERROR */,
+          ErrorCodes.MIDDLEWARE_ERROR,
           `Middleware execution timed out after ${timeout}ms`,
           { timeout, context }
         ));
@@ -1169,7 +1093,7 @@ var MiddlewareManager = class extends EventBus {
       ]);
     } catch (error) {
       if (error instanceof SkerError && error.message.includes("timed out")) {
-        this.emit(MIDDLEWARE_TIMEOUT, { timeout, context });
+        this.emit(import_constants.MIDDLEWARE_TIMEOUT, { timeout, context });
       }
       throw error;
     }
@@ -1211,7 +1135,7 @@ var MiddlewareManager = class extends EventBus {
     };
     this.middlewares.splice(index, 0, middleware);
     this.sorted = false;
-    this.emit(MIDDLEWARE_INSERTED, { middleware, beforeName });
+    this.emit(import_constants.MIDDLEWARE_INSERTED, { middleware, beforeName });
     return true;
   }
   insertAfter(afterName, handler, options) {
@@ -1227,7 +1151,7 @@ var MiddlewareManager = class extends EventBus {
     };
     this.middlewares.splice(index + 1, 0, middleware);
     this.sorted = false;
-    this.emit(MIDDLEWARE_INSERTED, { middleware, afterName });
+    this.emit(import_constants.MIDDLEWARE_INSERTED, { middleware, afterName });
     return true;
   }
   sortMiddlewares() {
@@ -1252,13 +1176,13 @@ var SkerCore = class extends EventBus {
     super();
     if (!options.serviceName) {
       throw new SkerError(
-        "INITIALIZATION_FAILED" /* INITIALIZATION_FAILED */,
+        ErrorCodes.INITIALIZATION_FAILED,
         "Service name is required"
       );
     }
     if (!options.version) {
       throw new SkerError(
-        "INITIALIZATION_FAILED" /* INITIALIZATION_FAILED */,
+        ErrorCodes.INITIALIZATION_FAILED,
         "Service version is required"
       );
     }
@@ -1276,16 +1200,16 @@ var SkerCore = class extends EventBus {
       this.setupEventHandlers();
       this.registerPlugins();
       this.setupLifecycleHooks();
-      this.emit(CORE_INITIALIZED, {
+      this.emit(import_constants.CORE_INITIALIZED, {
         serviceName: this.options.serviceName,
         version: this.options.version,
         environment: this.options.environment
       });
     } catch (error) {
       throw new SkerError(
-        "INITIALIZATION_FAILED" /* INITIALIZATION_FAILED */,
+        ErrorCodes.INITIALIZATION_FAILED,
         "Failed to initialize SkerCore",
-        { options: this.options },
+        [{ field: "options", error_code: ErrorCodes.INITIALIZATION_FAILED, error_message: `Options: ${JSON.stringify(this.options)}` }],
         error
       );
     }
@@ -1313,38 +1237,38 @@ var SkerCore = class extends EventBus {
   }
   async start() {
     try {
-      this.emit(CORE_STARTING, {});
+      this.emit(import_constants.CORE_STARTING, {});
       await this.lifecycleManager.start();
-      this.emit(CORE_STARTED, {
+      this.emit(import_constants.CORE_STARTED, {
         serviceName: this.serviceName,
         version: this.version,
         uptime: this.uptime
       });
     } catch (error) {
-      this.emit(CORE_START_FAILED, { error });
+      this.emit(import_constants.CORE_START_FAILED, { error });
       throw error;
     }
   }
   async stop() {
     try {
-      this.emit(CORE_STOPPING, {});
+      this.emit(import_constants.CORE_STOPPING, {});
       await this.lifecycleManager.stop();
-      this.emit(CORE_STOPPED, {
+      this.emit(import_constants.CORE_STOPPED, {
         serviceName: this.serviceName,
         uptime: this.uptime
       });
     } catch (error) {
-      this.emit(CORE_STOP_FAILED, { error });
+      this.emit(import_constants.CORE_STOP_FAILED, { error });
       throw error;
     }
   }
   async restart() {
     try {
-      this.emit(CORE_RESTARTING, {});
+      this.emit(import_constants.CORE_RESTARTING, {});
       await this.lifecycleManager.restart();
-      this.emit(CORE_RESTARTED, {});
+      this.emit(import_constants.CORE_RESTARTED, {});
     } catch (error) {
-      this.emit(CORE_RESTART_FAILED, { error });
+      this.emit(import_constants.CORE_RESTART_FAILED, { error });
       throw error;
     }
   }
@@ -1364,7 +1288,7 @@ var SkerCore = class extends EventBus {
     const plugin = this.pluginManager.get(name);
     if (!plugin) {
       throw new SkerError(
-        "PLUGIN_ERROR" /* PLUGIN_ERROR */,
+        ErrorCodes.PLUGIN_ERROR,
         `Plugin "${name}" not found or not initialized`
       );
     }
@@ -1392,13 +1316,13 @@ var SkerCore = class extends EventBus {
       const totalMemory = memoryUsage.heapTotal;
       const usedMemory = memoryUsage.heapUsed;
       const usage = usedMemory / totalMemory;
-      this.emit(MEMORY_USAGE, {
+      this.emit(import_constants.MEMORY_USAGE, {
         memoryUsage,
         usage,
         threshold
       });
       if (usage > threshold) {
-        this.emit(MEMORY_THRESHOLD_EXCEEDED, {
+        this.emit(import_constants.MEMORY_THRESHOLD_EXCEEDED, {
           usage,
           threshold,
           memoryUsage
@@ -1407,17 +1331,17 @@ var SkerCore = class extends EventBus {
     }, interval);
   }
   setupEventHandlers() {
-    this.lifecycleManager.on(ERROR, (error) => {
-      this.emit(LIFECYCLE_ERROR, error);
+    this.lifecycleManager.on(import_constants.ERROR, (error) => {
+      this.emit(import_constants.LIFECYCLE_ERROR, error);
     });
     this.pluginManager.on("pluginError", (data) => {
-      this.emit(CORE_PLUGIN_ERROR, data);
+      this.emit(import_constants.CORE_PLUGIN_ERROR, data);
     });
     this.middlewareManager.on("middlewareError", (data) => {
-      this.emit(CORE_MIDDLEWARE_ERROR, data);
+      this.emit(import_constants.CORE_MIDDLEWARE_ERROR, data);
     });
     this.configManager.on("change", (data) => {
-      this.emit(CORE_CONFIG_CHANGE, data);
+      this.emit(import_constants.CORE_CONFIG_CHANGE, data);
     });
     this.on("error", (error) => {
       console.error("SkerCore error:", error);
@@ -1483,7 +1407,7 @@ var Context = class _Context {
     const current = _Context.current();
     if (!current) {
       throw new SkerError(
-        "CONTEXT_ERROR" /* CONTEXT_ERROR */,
+        ErrorCodes.CONTEXT_ERROR,
         "No active context found. Make sure to run code within a context."
       );
     }
@@ -1518,7 +1442,7 @@ var Context = class _Context {
   }
   set(key, value) {
     if (!key) {
-      throw new SkerError("CONTEXT_ERROR" /* CONTEXT_ERROR */, "Context key cannot be empty");
+      throw new SkerError(ErrorCodes.CONTEXT_ERROR, "Context key cannot be empty");
     }
     this.data.set(key, value);
   }
@@ -1574,7 +1498,7 @@ var Context = class _Context {
       return new _Context(data);
     } catch (error) {
       throw new SkerError(
-        "CONTEXT_ERROR" /* CONTEXT_ERROR */,
+        ErrorCodes.CONTEXT_ERROR,
         "Failed to deserialize context",
         { serialized },
         error

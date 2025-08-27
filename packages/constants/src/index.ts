@@ -4,6 +4,9 @@ export * from './protocol.js';
 // Error code constants  
 export * from './errors.js';
 
+// Event constants
+export * from './events.js';
+
 // Service discovery constants
 export * from './service.js';
 

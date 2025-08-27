@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events';
-import { SkerCore } from '@sker/core';
 
 declare enum LogLevel {
     TRACE = 0,
@@ -346,16 +345,25 @@ declare class PerformanceLogger extends TracingLogger {
 }
 
 /**
- * Core-integrated Logger that extends SkerCore functionality
+ * Core-integrated Logger that provides structured logging capabilities
+ * 可以被Core系统集成的日志器实现
  */
-declare class CoreLogger extends SkerCore {
+declare class CoreLogger {
     private logger;
     private processors;
+    private serviceName;
+    private version;
+    private environment;
+    private startTime;
     constructor(options: CoreLoggerOptions);
     /**
-     * 设置核心集成
+     * 获取运行时长（毫秒）
      */
-    private setupCoreIntegration;
+    get uptime(): number;
+    /**
+     * 设置核心集成 (当与Core系统集成时可选调用)
+     */
+    setupCoreIntegration(coreInstance?: any): void;
     /**
      * 处理配置变更
      */

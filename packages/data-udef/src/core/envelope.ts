@@ -10,9 +10,12 @@ import type {
   ServiceInfo,
   ContentType,
   MessageType,
-  MessagePriority
+  MessagePriority,
+  UUID,
+  SkerTimestamp,
+  SkerString
 } from '@sker/types';
-import { BasicTypes, type UUID, type SkerTimestamp, type SkerString } from '@sker/types';
+import { BasicTypes } from '@sker/types';
 
 export class UDEFEnvelope implements MessageEnvelope {
   public readonly header: MessageHeader;

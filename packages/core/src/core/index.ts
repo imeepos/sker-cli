@@ -58,7 +58,7 @@ export class SkerCore extends EventBus {
       throw new SkerError(
         ErrorCodes.INITIALIZATION_FAILED,
         'Failed to initialize SkerCore',
-        { options: this.options },
+        [{ field: 'options', error_code: ErrorCodes.INITIALIZATION_FAILED, error_message: `Options: ${JSON.stringify(this.options)}` }],
         error as Error
       );
     }

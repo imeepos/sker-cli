@@ -5,7 +5,7 @@
 
 import type { UDEFMessageImpl } from '../core/message.js';
 import { UDEFMessage, MessageFactory } from '../core/message.js';
-import type { ServiceInfo } from '@sker/types';
+import type { ServiceInfo } from '@sker/core';
 
 export interface PoolOptions<T = any> {
   initialSize?: number;

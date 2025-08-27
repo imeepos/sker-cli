@@ -272,7 +272,7 @@ export class CrossLanguageTransformer {
 
     // 添加导入语句
     if (imports.size > 0) {
-      code += Array.from(imports).map(imp => `import { ${imp} } from '@sker/types';`).join('\\n');
+      code += Array.from(imports).map(imp => `import { ${imp} } from '@sker/core';`).join('\\n');
       code += '\\n\\n';
     }
 

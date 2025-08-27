@@ -37,11 +37,15 @@ type MessageType = typeof MESSAGE_TYPES[keyof typeof MESSAGE_TYPES];
 type ContentType = typeof CONTENT_TYPES[keyof typeof CONTENT_TYPES];
 
 declare const SYSTEM_ERROR_CODES: {
+    readonly UNKNOWN: "100000";
     readonly INTERNAL_ERROR: "100001";
     readonly SERVICE_UNAVAILABLE: "100002";
     readonly SERVICE_TIMEOUT: "100003";
     readonly RESOURCE_EXHAUSTED: "100004";
     readonly CONFIGURATION_ERROR: "100005";
+    readonly INITIALIZATION_FAILED: "100006";
+    readonly START_FAILED: "100007";
+    readonly STOP_FAILED: "100008";
     readonly NETWORK_CONNECTION_FAILED: "101001";
     readonly NETWORK_TIMEOUT: "101002";
     readonly NETWORK_INTERRUPTED: "101003";
@@ -50,6 +54,13 @@ declare const SYSTEM_ERROR_CODES: {
     readonly DESERIALIZATION_FAILED: "102002";
     readonly DATA_FORMAT_ERROR: "102003";
     readonly DATA_SIZE_EXCEEDED: "102004";
+};
+declare const CORE_ERROR_CODES: {
+    readonly CONFIG_ERROR: "150001";
+    readonly PLUGIN_ERROR: "150002";
+    readonly CONTEXT_ERROR: "150003";
+    readonly MIDDLEWARE_ERROR: "150004";
+    readonly EVENT_ERROR: "150005";
 };
 declare const BUSINESS_ERROR_CODES: {
     readonly BUSINESS_RULE_VIOLATION: "200001";
@@ -100,10 +111,195 @@ interface ErrorResponse {
 }
 declare function createErrorResponse(error: Omit<ErrorResponse, 'timestamp'>): ErrorResponse;
 type SystemErrorCode = typeof SYSTEM_ERROR_CODES[keyof typeof SYSTEM_ERROR_CODES];
+type CoreErrorCode = typeof CORE_ERROR_CODES[keyof typeof CORE_ERROR_CODES];
 type BusinessErrorCode = typeof BUSINESS_ERROR_CODES[keyof typeof BUSINESS_ERROR_CODES];
 type IntegrationErrorCode = typeof INTEGRATION_ERROR_CODES[keyof typeof INTEGRATION_ERROR_CODES];
 type SecurityErrorCode = typeof SECURITY_ERROR_CODES[keyof typeof SECURITY_ERROR_CODES];
-type ErrorCode = SystemErrorCode | BusinessErrorCode | IntegrationErrorCode | SecurityErrorCode;
+type ErrorCode = SystemErrorCode | CoreErrorCode | BusinessErrorCode | IntegrationErrorCode | SecurityErrorCode;
+
+/**
+ * Core Events Constants
+ * 核心事件常量定义
+ */
+type StringToken<T> = string & {
+    __type?: T;
+};
+declare const ERROR: StringToken<{
+    error: unknown;
+    event: StringToken<any>;
+}>;
+declare const MEMORY_USAGE: StringToken<{
+    memoryUsage: NodeJS.MemoryUsage;
+    usage: number;
+    threshold: number;
+}>;
+declare const MEMORY_THRESHOLD_EXCEEDED: StringToken<{
+    memoryUsage: NodeJS.MemoryUsage;
+    usage: number;
+    threshold: number;
+}>;
+declare const LIFECYCLE_ERROR: StringToken<{
+    error: unknown;
+    event: StringToken<any>;
+}>;
+declare const LIFECYCLE_STARTING: StringToken<{}>;
+declare const LIFECYCLE_STARTED: StringToken<{}>;
+declare const LIFECYCLE_STOPPING: StringToken<{}>;
+declare const LIFECYCLE_STOPPED: StringToken<{}>;
+declare const LIFECYCLE_STATE_CHANGED: StringToken<{
+    oldState: any;
+    newState: any;
+}>;
+declare const LIFECYCLE_HOOK_EXECUTING: StringToken<{
+    name: string;
+    phase: 'start' | 'stop';
+}>;
+declare const LIFECYCLE_HOOK_EXECUTED: StringToken<{
+    name: string;
+    phase: 'start' | 'stop';
+}>;
+declare const LIFECYCLE_HOOK_ERROR: StringToken<{
+    name: string;
+    phase: 'start' | 'stop';
+    error: unknown;
+}>;
+declare const CONFIG_CHANGE: StringToken<{
+    key: string;
+    value: any;
+    oldValue: any;
+}>;
+declare const CONFIG_RESET: StringToken<{
+    oldConfig: Record<string, any>;
+    newConfig: Record<string, any>;
+}>;
+declare const MIDDLEWARE_ADDED: StringToken<{
+    middleware: any;
+}>;
+declare const MIDDLEWARE_REMOVED: StringToken<{
+    middleware: any;
+}>;
+declare const MIDDLEWARE_ENABLED: StringToken<{
+    name: string;
+}>;
+declare const MIDDLEWARE_DISABLED: StringToken<{
+    name: string;
+}>;
+declare const MIDDLEWARES_CLEARED: StringToken<{
+    count: number;
+}>;
+declare const MIDDLEWARE_EXECUTING: StringToken<{
+    name: string;
+    context: any;
+}>;
+declare const MIDDLEWARE_EXECUTED: StringToken<{
+    name: string;
+    context: any;
+}>;
+declare const MIDDLEWARE_ERROR: StringToken<{
+    name: string;
+    error: unknown;
+    context: any;
+}>;
+declare const MIDDLEWARE_CHAIN_COMPLETED: StringToken<{
+    executedMiddlewares: string[];
+    context: any;
+}>;
+declare const MIDDLEWARE_CHAIN_FAILED: StringToken<{
+    error: unknown;
+    executedMiddlewares: string[];
+    context: any;
+}>;
+declare const MIDDLEWARE_TIMEOUT: StringToken<{
+    timeout: number;
+    context: any;
+}>;
+declare const MIDDLEWARE_INSERTED: StringToken<{
+    middleware: any;
+    beforeName?: string;
+    afterName?: string;
+}>;
+declare const PLUGIN_REGISTERED: StringToken<{
+    name: string;
+    plugin: any;
+    config: any;
+}>;
+declare const PLUGIN_UNREGISTERED: StringToken<{
+    name: string;
+}>;
+declare const PLUGIN_SKIPPED: StringToken<{
+    name: string;
+    reason: string;
+}>;
+declare const PLUGIN_INITIALIZING: StringToken<{
+    name: string;
+}>;
+declare const PLUGIN_INITIALIZED: StringToken<{
+    name: string;
+}>;
+declare const PLUGIN_ERROR: StringToken<{
+    name: string;
+    error: unknown;
+    phase: string;
+}>;
+declare const PLUGIN_DESTROYING: StringToken<{
+    name: string;
+}>;
+declare const PLUGIN_DESTROYED: StringToken<{
+    name: string;
+}>;
+declare const PLUGIN_ENABLED: StringToken<{
+    name: string;
+}>;
+declare const PLUGIN_DISABLED: StringToken<{
+    name: string;
+}>;
+declare const PLUGIN_CONFIG_UPDATED: StringToken<{
+    name: string;
+    oldConfig: Record<string, any>;
+    newConfig: Record<string, any>;
+}>;
+declare const CORE_INITIALIZED: StringToken<{
+    serviceName: string;
+    version: string;
+    environment: string;
+}>;
+declare const CORE_STARTING: StringToken<{}>;
+declare const CORE_STARTED: StringToken<{
+    serviceName: string;
+    version: string;
+    uptime: number;
+}>;
+declare const CORE_START_FAILED: StringToken<{
+    error: unknown;
+}>;
+declare const CORE_STOPPING: StringToken<{}>;
+declare const CORE_STOPPED: StringToken<{
+    serviceName: string;
+    uptime: number;
+}>;
+declare const CORE_STOP_FAILED: StringToken<{
+    error: unknown;
+}>;
+declare const CORE_RESTARTING: StringToken<{}>;
+declare const CORE_RESTARTED: StringToken<{}>;
+declare const CORE_RESTART_FAILED: StringToken<{
+    error: unknown;
+}>;
+declare const CORE_PLUGIN_ERROR: StringToken<{
+    name: string;
+    error: unknown;
+    phase: string;
+}>;
+declare const CORE_MIDDLEWARE_ERROR: StringToken<{
+    name: string;
+    error: unknown;
+    context: any;
+}>;
+declare const CORE_CONFIG_CHANGE: StringToken<{
+    key: string;
+    value: any;
+    oldValue: any;
+}>;
 
 declare const SERVICE_STATUS: {
     readonly UNKNOWN: 0;
@@ -467,4 +663,4 @@ declare function generateTraceId(): string;
 declare function getCurrentTimestamp(): number;
 declare function formatTimestamp(timestamp: number, format?: 'iso' | 'unix'): string | number;
 
-export { AUTH_TYPES, type ApplicationConfig, type AuthType, BUSINESS_ERROR_CODES, type BusinessErrorCode, CONFIG_PRIORITIES, CONFIG_SOURCES, CONTENT_TYPES, CRYPTO_ALGORITHMS, type ConfigEntry, type ConfigPriority, type ConfigSourceType, type ContentType, type CryptoAlgorithm, DEFAULT_LIMITS, DEFAULT_PORTS, DEFAULT_TIMEOUTS, type DefaultLimit, type DefaultPortType, type DefaultTimeout, ENVIRONMENTS, type EnvironmentType, type ErrorCode, type ErrorDetail, type ErrorResponse, HEALTH_CHECK_CONFIG, HTTP_METHODS, type HttpMethod, INTEGRATION_ERROR_CODES, type IntegrationErrorCode, type JWTAlgorithm, type JWTClaim, type JWTPayload, JWT_ALGORITHMS, JWT_CLAIMS, LOAD_BALANCE_STRATEGIES, LOG_FIELDS, LOG_LEVELS, type LoadBalanceStrategyType, type LogEntry, type LogField, type LogLevel, type LogLevelType, MESSAGE_TYPES, METRIC_LABELS, METRIC_TYPES, type MessageType, type MetricData, type MetricLabel, type MetricType, PERMISSION_LEVELS, PROTOCOL_TYPES, type PermissionLevel, type ProtocolType, RETRY_STRATEGIES, type RetryConfig, type RetryStrategyType, SECURITY_ERROR_CODES, SERVICE_STATUS, SYSTEM_ERROR_CODES, type SecurityErrorCode, type ServiceInfo, type ServiceStatusType, type SystemErrorCode, TIME_UNITS, TOKEN_TYPES, TRACE_HEADERS, type TimeUnit, type TimeoutConfig, type TokenType, type TraceHeader, buildUrl, createErrorResponse, deepMerge, delay, formatErrorCode, formatTimestamp, generateTraceId, generateUUID, getCurrentTimestamp, getErrorCategory, isValidErrorCode, isValidHttpMethod, isValidProtocol, logLevelToNumber, numberToLogLevel, numberToStatus, protocolToString, retry, statusToNumber, stringToProtocol };
+export { AUTH_TYPES, type ApplicationConfig, type AuthType, BUSINESS_ERROR_CODES, type BusinessErrorCode, CONFIG_CHANGE, CONFIG_PRIORITIES, CONFIG_RESET, CONFIG_SOURCES, CONTENT_TYPES, CORE_CONFIG_CHANGE, CORE_ERROR_CODES, CORE_INITIALIZED, CORE_MIDDLEWARE_ERROR, CORE_PLUGIN_ERROR, CORE_RESTARTED, CORE_RESTARTING, CORE_RESTART_FAILED, CORE_STARTED, CORE_STARTING, CORE_START_FAILED, CORE_STOPPED, CORE_STOPPING, CORE_STOP_FAILED, CRYPTO_ALGORITHMS, type ConfigEntry, type ConfigPriority, type ConfigSourceType, type ContentType, type CoreErrorCode, type CryptoAlgorithm, DEFAULT_LIMITS, DEFAULT_PORTS, DEFAULT_TIMEOUTS, type DefaultLimit, type DefaultPortType, type DefaultTimeout, ENVIRONMENTS, ERROR, type EnvironmentType, type ErrorCode, type ErrorDetail, type ErrorResponse, HEALTH_CHECK_CONFIG, HTTP_METHODS, type HttpMethod, INTEGRATION_ERROR_CODES, type IntegrationErrorCode, type JWTAlgorithm, type JWTClaim, type JWTPayload, JWT_ALGORITHMS, JWT_CLAIMS, LIFECYCLE_ERROR, LIFECYCLE_HOOK_ERROR, LIFECYCLE_HOOK_EXECUTED, LIFECYCLE_HOOK_EXECUTING, LIFECYCLE_STARTED, LIFECYCLE_STARTING, LIFECYCLE_STATE_CHANGED, LIFECYCLE_STOPPED, LIFECYCLE_STOPPING, LOAD_BALANCE_STRATEGIES, LOG_FIELDS, LOG_LEVELS, type LoadBalanceStrategyType, type LogEntry, type LogField, type LogLevel, type LogLevelType, MEMORY_THRESHOLD_EXCEEDED, MEMORY_USAGE, MESSAGE_TYPES, METRIC_LABELS, METRIC_TYPES, MIDDLEWARES_CLEARED, MIDDLEWARE_ADDED, MIDDLEWARE_CHAIN_COMPLETED, MIDDLEWARE_CHAIN_FAILED, MIDDLEWARE_DISABLED, MIDDLEWARE_ENABLED, MIDDLEWARE_ERROR, MIDDLEWARE_EXECUTED, MIDDLEWARE_EXECUTING, MIDDLEWARE_INSERTED, MIDDLEWARE_REMOVED, MIDDLEWARE_TIMEOUT, type MessageType, type MetricData, type MetricLabel, type MetricType, PERMISSION_LEVELS, PLUGIN_CONFIG_UPDATED, PLUGIN_DESTROYED, PLUGIN_DESTROYING, PLUGIN_DISABLED, PLUGIN_ENABLED, PLUGIN_ERROR, PLUGIN_INITIALIZED, PLUGIN_INITIALIZING, PLUGIN_REGISTERED, PLUGIN_SKIPPED, PLUGIN_UNREGISTERED, PROTOCOL_TYPES, type PermissionLevel, type ProtocolType, RETRY_STRATEGIES, type RetryConfig, type RetryStrategyType, SECURITY_ERROR_CODES, SERVICE_STATUS, SYSTEM_ERROR_CODES, type SecurityErrorCode, type ServiceInfo, type ServiceStatusType, type StringToken, type SystemErrorCode, TIME_UNITS, TOKEN_TYPES, TRACE_HEADERS, type TimeUnit, type TimeoutConfig, type TokenType, type TraceHeader, buildUrl, createErrorResponse, deepMerge, delay, formatErrorCode, formatTimestamp, generateTraceId, generateUUID, getCurrentTimestamp, getErrorCategory, isValidErrorCode, isValidHttpMethod, isValidProtocol, logLevelToNumber, numberToLogLevel, numberToStatus, protocolToString, retry, statusToNumber, stringToProtocol };

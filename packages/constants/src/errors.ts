@@ -1,11 +1,15 @@
 // 系统级错误码 (1xx-xxx)
 export const SYSTEM_ERROR_CODES = {
   // 通用系统错误 (100-xxx)
+  UNKNOWN: '100000',
   INTERNAL_ERROR: '100001',
   SERVICE_UNAVAILABLE: '100002',
   SERVICE_TIMEOUT: '100003',
   RESOURCE_EXHAUSTED: '100004',
   CONFIGURATION_ERROR: '100005',
+  INITIALIZATION_FAILED: '100006',
+  START_FAILED: '100007',
+  STOP_FAILED: '100008',
   
   // 网络错误 (101-xxx)
   NETWORK_CONNECTION_FAILED: '101001',
@@ -18,6 +22,15 @@ export const SYSTEM_ERROR_CODES = {
   DESERIALIZATION_FAILED: '102002',
   DATA_FORMAT_ERROR: '102003',
   DATA_SIZE_EXCEEDED: '102004'
+} as const;
+
+// Core模块错误码 (150-xxx)  
+export const CORE_ERROR_CODES = {
+  CONFIG_ERROR: '150001',
+  PLUGIN_ERROR: '150002',
+  CONTEXT_ERROR: '150003',
+  MIDDLEWARE_ERROR: '150004',
+  EVENT_ERROR: '150005'
 } as const;
 
 // 业务级错误码 (2xx-xxx)
@@ -97,8 +110,9 @@ export function createErrorResponse(error: Omit<ErrorResponse, 'timestamp'>): Er
 
 // 类型定义
 export type SystemErrorCode = typeof SYSTEM_ERROR_CODES[keyof typeof SYSTEM_ERROR_CODES];
+export type CoreErrorCode = typeof CORE_ERROR_CODES[keyof typeof CORE_ERROR_CODES];
 export type BusinessErrorCode = typeof BUSINESS_ERROR_CODES[keyof typeof BUSINESS_ERROR_CODES];
 export type IntegrationErrorCode = typeof INTEGRATION_ERROR_CODES[keyof typeof INTEGRATION_ERROR_CODES];
 export type SecurityErrorCode = typeof SECURITY_ERROR_CODES[keyof typeof SECURITY_ERROR_CODES];
 
-export type ErrorCode = SystemErrorCode | BusinessErrorCode | IntegrationErrorCode | SecurityErrorCode;
+export type ErrorCode = SystemErrorCode | CoreErrorCode | BusinessErrorCode | IntegrationErrorCode | SecurityErrorCode;

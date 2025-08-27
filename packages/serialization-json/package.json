@@ -52,11 +52,8 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@sker/types": "workspace:*",
-    "@sker/constants": "workspace:*",
-    "@sker/utils": "workspace:*",
-    "@sker/logger": "workspace:*",
-    "@sker/error-core": "workspace:*"
+    "@sker/core": "workspace:*",
+    "@sker/data-udef": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

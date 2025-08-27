@@ -1,4 +1,3 @@
-import { SkerCore } from '@sker/core';
 import { Logger } from './logger.js';
 import { 
   LogLevel, 
@@ -13,21 +12,21 @@ import {
 } from './types.js';
 
 /**
- * Core-integrated Logger that extends SkerCore functionality
+ * Core-integrated Logger that provides structured logging capabilities
+ * 可以被Core系统集成的日志器实现
  */
-export class CoreLogger extends SkerCore {
+export class CoreLogger {
   private logger: Logger;
   private processors: Map<string, LogProcessor> = new Map();
+  private serviceName: string;
+  private version: string;
+  private environment: string;
+  private startTime: number = Date.now();
 
   constructor(options: CoreLoggerOptions) {
-    super({
-      serviceName: options.serviceName || 'sker-logger',
-      version: options.version || '1.0.0',
-      environment: options.environment || 'development',
-      config: options.config,
-      plugins: options.plugins,
-      lifecycle: options.lifecycle
-    });
+    this.serviceName = options.serviceName || 'sker-logger';
+    this.version = options.version || '1.0.0';
+    this.environment = options.environment || 'development';
 
     const loggerConfig: LoggerConfig = {
       name: this.serviceName,
@@ -40,47 +39,81 @@ export class CoreLogger extends SkerCore {
     };
 
     this.logger = new Logger(loggerConfig);
+    
+    // 如果没有提供核心实例，则仅初始化基本功能
     this.setupCoreIntegration();
   }
 
   /**
-   * 设置核心集成
+   * 获取运行时长（毫秒）
    */
-  private setupCoreIntegration(): void {
-    // 监听配置变更
-    this.getConfig().on('change', ({ key, newValue }) => {
-      if (key.startsWith('logger.')) {
-        this.handleConfigChange(key, newValue);
-      }
-    });
+  get uptime(): number {
+    return Date.now() - this.startTime;
+  }
 
-    // 监听生命周期事件
-    this.getLifecycle().onStart(async () => {
-      this.logger.info('Logger service starting', {
+  /**
+   * 设置核心集成 (当与Core系统集成时可选调用)
+   */
+  setupCoreIntegration(coreInstance?: any): void {
+    if (!coreInstance) {
+      // 如果没有核心实例，仅设置基本日志功能
+      this.logger.info('Logger initialized without core integration', {
         service: this.serviceName,
         version: this.version
       });
-    });
+      return;
+    }
 
-    this.getLifecycle().onStop(async () => {
-      this.logger.info('Logger service stopping');
-      await this.logger.close();
-    });
+    // 监听配置变更
+    if (coreInstance.getConfig && typeof coreInstance.getConfig === 'function') {
+      const config = coreInstance.getConfig();
+      if (config && config.on) {
+        config.on('change', ({ key, newValue }: any) => {
+          if (key.startsWith('logger.')) {
+            this.handleConfigChange(key, newValue);
+          }
+        });
+      }
+    }
 
-    // 集成插件系统
-    this.on('CORE_PLUGIN_ERROR', ({ error, plugin }) => {
-      this.logger.error('Plugin error occurred', {
-        plugin,
-        error: error.message
-      }, error);
-    });
+    // 监听生命周期事件
+    if (coreInstance.getLifecycle && typeof coreInstance.getLifecycle === 'function') {
+      const lifecycle = coreInstance.getLifecycle();
+      if (lifecycle) {
+        if (lifecycle.onStart) {
+          lifecycle.onStart(async () => {
+            this.logger.info('Logger service starting', {
+              service: this.serviceName,
+              version: this.version
+            });
+          });
+        }
 
-    this.on('CORE_MIDDLEWARE_ERROR', ({ error, middleware }) => {
-      this.logger.error('Middleware error occurred', {
-        middleware,
-        error: error.message
-      }, error);
-    });
+        if (lifecycle.onStop) {
+          lifecycle.onStop(async () => {
+            this.logger.info('Logger service stopping');
+            await this.logger.close();
+          });
+        }
+      }
+    }
+
+    // 集成事件系统
+    if (coreInstance.on && typeof coreInstance.on === 'function') {
+      coreInstance.on('CORE_PLUGIN_ERROR', ({ error, plugin }: any) => {
+        this.logger.error('Plugin error occurred', {
+          plugin,
+          error: error.message
+        }, error);
+      });
+
+      coreInstance.on('CORE_MIDDLEWARE_ERROR', ({ error, middleware }: any) => {
+        this.logger.error('Middleware error occurred', {
+          middleware,
+          error: error.message
+        }, error);
+      });
+    }
   }
 
   /**

@@ -54,13 +54,7 @@
   },
   "dependencies": {
     "@sker/core": "workspace:*",
-    "@sker/constants": "workspace:*",
-    "@sker/error-core": "workspace:*",
-    "@sker/logger": "workspace:*",
-    "@sker/protocol-ucp": "workspace:*",
     "@sker/serialization-json": "workspace:*",
-    "@sker/types": "workspace:*",
-    "@sker/utils": "workspace:*",
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {

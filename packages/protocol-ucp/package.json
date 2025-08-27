@@ -55,11 +55,6 @@
   },
   "dependencies": {
     "@sker/core": "workspace:*",
-    "@sker/constants": "workspace:*",
-    "@sker/error-core": "workspace:*",
-    "@sker/logger": "workspace:*",
-    "@sker/types": "workspace:*",
-    "@sker/utils": "workspace:*",
     "ws": "^8.18.3"
   },
   "devDependencies": {

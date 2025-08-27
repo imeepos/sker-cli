@@ -3,7 +3,7 @@
  * Cross-language type mapper
  */
 
-import { type SkerString } from '@sker/types';
+import { type SkerString } from '@sker/core';
 
 export type SupportedLanguage = 'typescript' | 'javascript' | 'java' | 'go' | 'rust' | 'csharp' | 'python';
 

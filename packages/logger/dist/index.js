@@ -947,19 +947,17 @@ var PerformanceLogger = class _PerformanceLogger extends TracingLogger {
 };
 
 // src/core-logger.ts
-import { SkerCore } from "@sker/core";
-var CoreLogger = class extends SkerCore {
+var CoreLogger = class {
   logger;
   processors = /* @__PURE__ */ new Map();
+  serviceName;
+  version;
+  environment;
+  startTime = Date.now();
   constructor(options) {
-    super({
-      serviceName: options.serviceName || "sker-logger",
-      version: options.version || "1.0.0",
-      environment: options.environment || "development",
-      config: options.config,
-      plugins: options.plugins,
-      lifecycle: options.lifecycle
-    });
+    this.serviceName = options.serviceName || "sker-logger";
+    this.version = options.version || "1.0.0";
+    this.environment = options.environment || "development";
     const loggerConfig = {
       name: this.serviceName,
       service: {
@@ -973,36 +971,65 @@ var CoreLogger = class extends SkerCore {
     this.setupCoreIntegration();
   }
   /**
-   * 设置核心集成
+   * 获取运行时长（毫秒）
    */
-  setupCoreIntegration() {
-    this.getConfig().on("change", ({ key, newValue }) => {
-      if (key.startsWith("logger.")) {
-        this.handleConfigChange(key, newValue);
-      }
-    });
-    this.getLifecycle().onStart(async () => {
-      this.logger.info("Logger service starting", {
+  get uptime() {
+    return Date.now() - this.startTime;
+  }
+  /**
+   * 设置核心集成 (当与Core系统集成时可选调用)
+   */
+  setupCoreIntegration(coreInstance) {
+    if (!coreInstance) {
+      this.logger.info("Logger initialized without core integration", {
         service: this.serviceName,
         version: this.version
       });
-    });
-    this.getLifecycle().onStop(async () => {
-      this.logger.info("Logger service stopping");
-      await this.logger.close();
-    });
-    this.on("CORE_PLUGIN_ERROR", ({ error, plugin }) => {
-      this.logger.error("Plugin error occurred", {
-        plugin,
-        error: error.message
-      }, error);
-    });
-    this.on("CORE_MIDDLEWARE_ERROR", ({ error, middleware }) => {
-      this.logger.error("Middleware error occurred", {
-        middleware,
-        error: error.message
-      }, error);
-    });
+      return;
+    }
+    if (coreInstance.getConfig && typeof coreInstance.getConfig === "function") {
+      const config = coreInstance.getConfig();
+      if (config && config.on) {
+        config.on("change", ({ key, newValue }) => {
+          if (key.startsWith("logger.")) {
+            this.handleConfigChange(key, newValue);
+          }
+        });
+      }
+    }
+    if (coreInstance.getLifecycle && typeof coreInstance.getLifecycle === "function") {
+      const lifecycle = coreInstance.getLifecycle();
+      if (lifecycle) {
+        if (lifecycle.onStart) {
+          lifecycle.onStart(async () => {
+            this.logger.info("Logger service starting", {
+              service: this.serviceName,
+              version: this.version
+            });
+          });
+        }
+        if (lifecycle.onStop) {
+          lifecycle.onStop(async () => {
+            this.logger.info("Logger service stopping");
+            await this.logger.close();
+          });
+        }
+      }
+    }
+    if (coreInstance.on && typeof coreInstance.on === "function") {
+      coreInstance.on("CORE_PLUGIN_ERROR", ({ error, plugin }) => {
+        this.logger.error("Plugin error occurred", {
+          plugin,
+          error: error.message
+        }, error);
+      });
+      coreInstance.on("CORE_MIDDLEWARE_ERROR", ({ error, middleware }) => {
+        this.logger.error("Middleware error occurred", {
+          middleware,
+          error: error.message
+        }, error);
+      });
+    }
   }
   /**
    * 处理配置变更

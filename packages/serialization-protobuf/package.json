@@ -52,11 +52,8 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@sker/types": "workspace:*",
-    "@sker/constants": "workspace:*",
-    "@sker/utils": "workspace:*",
-    "@sker/logger": "workspace:*",
-    "@sker/error-core": "workspace:*",
+    "@sker/core": "workspace:*",
+    "@sker/data-udef": "workspace:*",
     "protobufjs": "^7.2.5",
     "protobufjs-cli": "^1.1.1",
     "long": "^5.2.3",
