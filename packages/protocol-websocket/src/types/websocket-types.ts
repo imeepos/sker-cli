@@ -3,6 +3,15 @@
  */
 
 import { EventEmitter } from 'events';
+import type { CoreOptions } from '@sker/core';
+
+export interface WebSocketServerOptions {
+  serviceName?: string;
+  version?: string;
+  environment?: string;
+  serverConfig?: Partial<ServerConfig>;
+  coreOptions?: Partial<CoreOptions>;
+}
 
 // 基础类型
 export type WebSocketState = 'CONNECTING' | 'OPEN' | 'CLOSING' | 'CLOSED';

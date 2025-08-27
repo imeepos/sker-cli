@@ -2,28 +2,77 @@
  * gRPC服务器核心实现
  */
 
-import { EventEmitter } from 'events';
+import { SkerCore } from '@sker/core';
 import { 
   ServerConfig, 
   ServiceHandler, 
   ServiceRegistrationOptions, 
   ServerMiddleware, 
-  MiddlewareContext 
+  MiddlewareContext,
+  GRPCServerOptions 
 } from '../types/grpc-types.js';
 import { DEFAULT_SERVER_CONFIG } from '../constants/grpc-constants.js';
 import { ServiceRegistry } from './service-registry.js';
 
-export class GRPCServer extends EventEmitter {
+export class GRPCServer extends SkerCore {
   private config: ServerConfig;
   private serviceRegistry: ServiceRegistry;
-  private middlewares: ServerMiddleware[] = [];
-  private isRunning = false;
   private server: any; // HTTP/2服务器实例
 
-  constructor(config: Partial<ServerConfig> = {}) {
-    super();
-    this.config = { ...DEFAULT_SERVER_CONFIG, ...config } as any;
+  constructor(options: GRPCServerOptions) {
+    super({
+      serviceName: options.serviceName || 'grpc-server',
+      version: options.version || '1.0.0',
+      environment: options.environment || 'development',
+      ...options.coreOptions
+    });
+    
+    this.config = { ...DEFAULT_SERVER_CONFIG, ...options.serverConfig } as any;
     this.serviceRegistry = new ServiceRegistry();
+    
+    // 设置生命周期钩子
+    this.getLifecycle().onStart(this.startGRPCServer.bind(this));
+    this.getLifecycle().onStop(this.stopGRPCServer.bind(this));
+    
+    // 注册核心中间件
+    this.setupCoreMiddleware();
+  }
+
+  /**
+   * 设置核心中间件
+   */
+  private setupCoreMiddleware(): void {
+    // 使用 @sker/core 的中间件管理器
+    const middleware = this.getMiddleware();
+    
+    // 添加请求日志中间件
+    middleware.use('grpc-logger', async (context, next) => {
+      const start = Date.now();
+      this.emit('request:start', {
+        method: context.method,
+        timestamp: start
+      });
+      
+      try {
+        const result = await next();
+        const duration = Date.now() - start;
+        this.emit('request:success', {
+          method: context.method,
+          duration,
+          timestamp: start
+        });
+        return result;
+      } catch (error) {
+        const duration = Date.now() - start;
+        this.emit('request:error', {
+          method: context.method,
+          error,
+          duration,
+          timestamp: start
+        });
+        throw error;
+      }
+    });
   }
 
   /**
@@ -57,51 +106,46 @@ export class GRPCServer extends EventEmitter {
   }
 
   /**
-   * 添加服务器中间件
+   * 添加服务中间件 (使用核心中间件管理器)
    */
-  use(middlewares: ServerMiddleware | ServerMiddleware[]): void {
+  use(name: string, middlewares: ServerMiddleware | ServerMiddleware[]): void {
+    const middlewareManager = this.getMiddleware();
     const middlewareArray = Array.isArray(middlewares) ? middlewares : [middlewares];
-    this.middlewares.push(...middlewareArray);
+    
+    middlewareArray.forEach((middleware, index) => {
+      middlewareManager.use(`${name}-${index}`, middleware);
+    });
   }
 
   /**
-   * 启动gRPC服务器
+   * gRPC服务器启动逻辑 (生命周期钩子)
    */
-  async start(): Promise<void> {
-    if (this.isRunning) {
-      throw new Error('Server is already running');
-    }
-
+  private async startGRPCServer(): Promise<void> {
     try {
       await this.createServer();
       await this.bindServer();
       await this.startHealthCheck();
       
-      this.isRunning = true;
-      this.emit('server:started', {
+      this.emit('grpc:server_started', {
         host: this.config.host,
-        port: this.config.port
+        port: this.config.port,
+        services: this.getServices()
       });
     } catch (error) {
-      this.emit('server:error', error);
+      this.emit('grpc:server_error', error);
       throw error;
     }
   }
 
   /**
-   * 停止gRPC服务器
+   * gRPC服务器停止逻辑 (生命周期钩子)
    */
-  async stop(): Promise<void> {
-    if (!this.isRunning) {
-      return;
-    }
-
+  private async stopGRPCServer(): Promise<void> {
     try {
       await this.stopServer();
-      this.isRunning = false;
-      this.emit('server:stopped');
+      this.emit('grpc:server_stopped');
     } catch (error) {
-      this.emit('server:error', error);
+      this.emit('grpc:server_error', error);
       throw error;
     }
   }
@@ -150,7 +194,7 @@ export class GRPCServer extends EventEmitter {
     connections: number;
   } {
     return {
-      isRunning: this.isRunning,
+      isRunning: this.isStarted,
       config: this.config,
       services: this.getServices(),
       connections: this.getActiveConnectionCount()
@@ -179,20 +223,13 @@ export class GRPCServer extends EventEmitter {
     methodName: string,
     request: any
   ) {
+    const middlewareManager = this.getMiddleware();
     return async (context: MiddlewareContext) => {
-      let index = 0;
-
-      const next = async (): Promise<any> => {
-        if (index < this.middlewares.length) {
-          const middleware = this.middlewares[index++]!;
-          return await middleware(context, next);
-        }
-        
-        // 执行实际的服务方法
-        return await this.executeServiceMethod(serviceName, methodName, request, context);
-      };
-
-      return await next();
+      // 使用核心中间件管理器执行中间件链
+      await middlewareManager.execute(context as any);
+      
+      // 执行实际的服务方法
+      return await this.executeServiceMethod(serviceName, methodName, request, context);
     };
   }
 

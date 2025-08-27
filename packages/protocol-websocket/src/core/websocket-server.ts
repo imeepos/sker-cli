@@ -2,6 +2,7 @@
  * @sker/protocol-websocket - WebSocket服务器核心实现
  */
 
+import { SkerCore } from '@sker/core';
 import { EventEmitter } from 'events';
 import { Server } from 'http';
 import { WebSocketServer as WSServer } from 'ws';
@@ -13,7 +14,8 @@ import {
   Middleware,
   WebSocketState,
   ConnectionInfo,
-  User
+  User,
+  WebSocketServerOptions
 } from '../types/websocket-types.js';
 import { 
   DEFAULT_SERVER_CONFIG, 
@@ -32,7 +34,7 @@ import {
   parseUserAgent 
 } from '../utils/websocket-utils.js';
 
-export class WebSocketServer extends EventEmitter {
+export class WebSocketServer extends SkerCore {
   private config: ServerConfig;
   private logger: Logger;
   private server?: Server;
@@ -41,13 +43,16 @@ export class WebSocketServer extends EventEmitter {
   private eventEmitter: WebSocketEventEmitter;
   private messageHandler: MessageHandler;
   private lifecycleHandler: LifecycleHandler;
-  private middlewares: Middleware[] = [];
-  private isStarted: boolean = false;
 
-  constructor(config: Partial<ServerConfig> = {}) {
-    super();
+  constructor(options: WebSocketServerOptions) {
+    super({
+      serviceName: options.serviceName || 'websocket-server',
+      version: options.version || '1.0.0',
+      environment: options.environment || 'development',
+      ...options.coreOptions
+    });
     
-    this.config = deepMerge(DEFAULT_SERVER_CONFIG as ServerConfig, config);
+    this.config = deepMerge(DEFAULT_SERVER_CONFIG as ServerConfig, options.serverConfig || {});
     this.logger = new Logger({ 
       name: 'WebSocketServer',
       level: (this.config.monitoring?.logging?.level as any) || 'info'
@@ -62,14 +67,154 @@ export class WebSocketServer extends EventEmitter {
     this.messageHandler = new DefaultMessageHandler(this.logger, this.eventEmitter);
     this.lifecycleHandler = new LifecycleHandler(this.logger, this.eventEmitter);
     
+    // 设置生命周期钩子
+    this.getLifecycle().onStart(this.startWebSocketServer.bind(this));
+    this.getLifecycle().onStop(this.stopWebSocketServer.bind(this));
+    
+    // 设置核心中间件
+    this.setupCoreMiddleware();
     this.setupEventHandlers();
     this.validateConfiguration();
   }
 
-  private validateConfiguration(): void {
-    if (!this.config.port || this.config.port < 1 || this.config.port > 65535) {
-      throw new Error('Invalid port number');
+  /**
+   * 设置核心中间件
+   */
+  private setupCoreMiddleware(): void {
+    const middleware = this.getMiddleware();
+    
+    // WebSocket连接日志中间件
+    middleware.use(async (context: any, next: () => Promise<any>) => {
+      const start = Date.now();
+      this.emit('ws:request:start', {
+        connectionId: context.connectionId,
+        messageType: context.messageType,
+        timestamp: start
+      });
+      
+      try {
+        const result = await next();
+        const duration = Date.now() - start;
+        this.emit('ws:request:success', {
+          connectionId: context.connectionId,
+          messageType: context.messageType,
+          duration,
+          timestamp: start
+        });
+        return result;
+      } catch (error) {
+        const duration = Date.now() - start;
+        this.emit('ws:request:error', {
+          connectionId: context.connectionId,
+          messageType: context.messageType,
+          error,
+          duration,
+          timestamp: start
+        });
+        throw error;
+      }
+    }, { name: 'websocket-logger' });
+  }
+
+  /**
+   * WebSocket服务器启动逻辑 (生命周期钩子)
+   */
+  private async startWebSocketServer(): Promise<void> {
+    try {
+      this.logger.info('Starting WebSocket server', {
+        host: this.config.host,
+        port: this.config.port,
+        maxConnections: this.config.websocket?.connection?.maxConnections
+      });
+
+      // 创建HTTP服务器（如果需要）
+      if (!this.server) {
+        this.server = new Server();
+      }
+
+      // 创建WebSocket服务器
+      this.wsServer = new WSServer({
+        server: this.server,
+        perMessageDeflate: this.config.websocket?.message?.compression?.enabled || false,
+        maxPayload: this.config.websocket?.message?.maxSize || 1024 * 1024,
+        clientTracking: true,
+        handleProtocols: this.handleProtocols.bind(this)
+      });
+
+      // 设置WebSocket事件处理
+      this.wsServer.on('connection', this.handleConnection.bind(this));
+      this.wsServer.on('error', this.handleServerError.bind(this));
+      this.wsServer.on('headers', this.handleHeaders.bind(this));
+
+      // 启动HTTP服务器
+      await new Promise<void>((resolve, reject) => {
+        this.server!.listen(this.config.port, this.config.host, (error?: Error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+      
+      this.logger.info('WebSocket server started successfully', {
+        address: `ws://${this.config.host}:${this.config.port}`
+      });
+
+      this.emit('ws:server_started', {
+        host: this.config.host,
+        port: this.config.port
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to start WebSocket server', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      await this.cleanup();
+      this.emit('ws:server_error', error);
+      throw error;
     }
+  }
+
+  /**
+   * WebSocket服务器停止逻辑 (生命周期钩子)
+   */
+  private async stopWebSocketServer(): Promise<void> {
+    const timeout = 30000;
+    this.logger.info('Stopping WebSocket server', { timeout });
+
+    try {
+      // 停止接受新连接
+      if (this.wsServer) {
+        this.wsServer.close();
+      }
+
+      // 优雅关闭所有连接
+      await this.connectionManager.shutdown(timeout);
+
+      // 关闭HTTP服务器
+      if (this.server) {
+        await new Promise<void>((resolve) => {
+          this.server!.close(() => resolve());
+        });
+      }
+
+      await this.cleanup();
+      
+      this.logger.info('WebSocket server stopped successfully');
+      this.emit('ws:server_stopped');
+
+    } catch (error) {
+      this.logger.error('Error during server shutdown', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      this.emit('ws:server_error', error);
+      throw error;
+    }
+  }
+
+  private validateConfiguration(): void {
 
     if (this.config.websocket?.connection?.maxConnections && 
         this.config.websocket.connection.maxConnections < 1) {
@@ -83,7 +228,7 @@ export class WebSocketServer extends EventEmitter {
     });
   }
 
-  private setupEventHandlers(): void {
+  private override setupEventHandlers(): void {
     // 连接管理器事件
     this.connectionManager.on(WebSocketEvent.CONNECTION, (connection: WebSocketConnection) => {
       this.emit(WebSocketEvent.CONNECTION, connection);
@@ -120,7 +265,7 @@ export class WebSocketServer extends EventEmitter {
     });
   }
 
-  async start(): Promise<void> {
+  override async start(): Promise<void> {
     if (this.isStarted) {
       throw new Error('Server is already started');
     }
@@ -447,23 +592,27 @@ export class WebSocketServer extends EventEmitter {
     this.logger.debug('Message handler updated');
   }
 
-  public use(middleware: Middleware): void;
+  public use(name: string, middleware: Middleware): void;
   public use(middlewares: string[]): void;
-  public use(middlewareOrArray: Middleware | string[]): void {
-    if (Array.isArray(middlewareOrArray)) {
+  public use(nameOrArray: string | string[], middleware?: Middleware): void {
+    const middlewareManager = this.getMiddleware();
+    
+    if (Array.isArray(nameOrArray)) {
       // 如果是字符串数组，创建内置中间件
-      for (const middlewareName of middlewareOrArray) {
-        const middleware = this.createBuiltinMiddleware(middlewareName);
-        if (middleware) {
-          this.middlewares.push(middleware);
+      for (const middlewareName of nameOrArray) {
+        const builtinMiddleware = this.createBuiltinMiddleware(middlewareName);
+        if (builtinMiddleware) {
+          middlewareManager.use(builtinMiddleware.execute, { name: middlewareName });
         }
       }
-    } else {
-      this.middlewares.push(middlewareOrArray);
+    } else if (middleware) {
+      // 直接注册中间件
+      middlewareManager.use(middleware.execute, { name: nameOrArray });
     }
     
     this.logger.debug('Middleware added', { 
-      count: this.middlewares.length 
+      name: nameOrArray,
+      count: middlewareManager.getMiddlewares().length
     });
   }
 
@@ -523,7 +672,7 @@ export class WebSocketServer extends EventEmitter {
     return this.connectionManager.getConnectionCount();
   }
 
-  public getConfig(): ServerConfig {
+  public getServerConfig(): ServerConfig {
     return { ...this.config };
   }
 

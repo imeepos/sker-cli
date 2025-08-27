@@ -2,6 +2,16 @@
  * gRPC协议核心类型定义
  */
 
+import type { CoreOptions } from '@sker/core';
+
+export interface GRPCServerOptions {
+  serviceName?: string;
+  version?: string;
+  environment?: string;
+  serverConfig?: Partial<ServerConfig>;
+  coreOptions?: Partial<CoreOptions>;
+}
+
 export interface TLSConfig {
   enabled: boolean;
   keyFile?: string;

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { SkerCore } from '@sker/core';
 import {
   ProtocolType,
   ProtocolAdapter,
@@ -14,6 +14,14 @@ import { SerializationManager, SerializationConfig } from '../interfaces/seriali
 /**
  * UCP管理器配置接口
  */
+export interface UCPManagerOptions {
+  serviceName?: string;
+  version?: string;
+  environment?: string;
+  coreOptions?: any;
+  ucpConfig?: UCPManagerConfig;
+}
+
 export interface UCPManagerConfig {
   service: {
     name: string;
@@ -70,31 +78,86 @@ export interface UCPManagerConfig {
 /**
  * UCP管理器实现
  */
-export class UCPManager extends EventEmitter {
+export class UCPManager extends SkerCore {
   private readonly config: UCPManagerConfig;
   private readonly adapters: Map<ProtocolType, ProtocolAdapter> = new Map();
   private readonly clients: Map<string, ProtocolClient> = new Map();
   private readonly servers: Map<ProtocolType, ProtocolServer> = new Map();
   private readonly handlers: Map<string, ProtocolHandler> = new Map();
-  private readonly middleware: Array<(context: any, next: () => Promise<any>) => Promise<any>> = [];
   
   private transportManager?: TransportManager;
   private serializationManager?: SerializationManager;
-  private isStarted = false;
   
-  constructor(config: UCPManagerConfig) {
-    super();
-    this.config = config;
+  constructor(options: UCPManagerOptions) {
+    super({
+      serviceName: options.serviceName || 'ucp-manager',
+      version: options.version || '1.0.0',
+      environment: options.environment || 'development',
+      ...options.coreOptions
+    });
+    
+    this.config = options.ucpConfig || {
+      service: {
+        name: this.serviceName,
+        version: this.version,
+        instance: `${this.serviceName}-${Date.now()}`
+      },
+      protocols: {}
+    };
+    
+    // 设置生命周期钩子
+    this.getLifecycle().onStart(this.startUCPManager.bind(this));
+    this.getLifecycle().onStop(this.stopUCPManager.bind(this));
+    
+    // 设置核心中间件
+    this.setupCoreMiddleware();
+  }
+  /**
+   * 设置核心中间件
+   */
+  private setupCoreMiddleware(): void {
+    const middleware = this.getMiddleware();
+    
+    // 协议请求日志中间件
+    middleware.use(async (context: any, next: () => Promise<any>) => {
+      const start = Date.now();
+      this.emit('protocol:request:start', {
+        protocol: context.protocol,
+        service: context.service,
+        method: context.method,
+        timestamp: start
+      });
+      
+      try {
+        const result = await next();
+        const duration = Date.now() - start;
+        this.emit('protocol:request:success', {
+          protocol: context.protocol,
+          service: context.service,
+          method: context.method,
+          duration,
+          timestamp: start
+        });
+        return result;
+      } catch (error) {
+        const duration = Date.now() - start;
+        this.emit('protocol:request:error', {
+          protocol: context.protocol,
+          service: context.service,
+          method: context.method,
+          error,
+          duration,
+          timestamp: start
+        });
+        throw error;
+      }
+    }, { name: 'ucp-logger' });
   }
   
   /**
-   * 启动UCP管理器
+   * UCP管理器启动逻辑 (生命周期钩子)
    */
-  async start(): Promise<void> {
-    if (this.isStarted) {
-      throw new Error('UCPManager is already started');
-    }
-    
+  private async startUCPManager(): Promise<void> {
     try {
       // 启动传输层
       if (this.transportManager) {
@@ -111,23 +174,22 @@ export class UCPManager extends EventEmitter {
       
       await Promise.all(startPromises);
       
-      this.isStarted = true;
-      this.emit('started', { service: this.config.service });
+      this.emit('ucp:manager_started', { 
+        service: this.config.service,
+        protocols: Array.from(this.adapters.keys()),
+        servers: this.servers.size
+      });
       
     } catch (error) {
-      this.emit('error', error);
+      this.emit('ucp:manager_error', error);
       throw error;
     }
   }
   
   /**
-   * 停止UCP管理器
+   * UCP管理器停止逻辑 (生命周期钩子)
    */
-  async stop(): Promise<void> {
-    if (!this.isStarted) {
-      return;
-    }
-    
+  private async stopUCPManager(): Promise<void> {
     try {
       // 停止协议服务器
       const stopPromises: Promise<void>[] = [];
@@ -146,11 +208,10 @@ export class UCPManager extends EventEmitter {
       await Promise.all(closePromises);
       
       this.clients.clear();
-      this.isStarted = false;
-      this.emit('stopped');
+      this.emit('ucp:manager_stopped');
       
     } catch (error) {
-      this.emit('error', error);
+      this.emit('ucp:manager_error', error);
       throw error;
     }
   }
@@ -236,11 +297,12 @@ export class UCPManager extends EventEmitter {
   }
   
   /**
-   * 使用中间件
+   * 使用中间件 (委托给核心中间件管理器)
    */
-  use(middleware: (context: any, next: () => Promise<any>) => Promise<any>): void {
-    this.middleware.push(middleware);
-    this.emit('middleware.registered', { count: this.middleware.length });
+  use(name: string, middleware: (context: any, next: () => Promise<any>) => Promise<any>): void {
+    const middlewareManager = this.getMiddleware();
+    middlewareManager.use(middleware, { name });
+    this.emit('ucp:middleware_registered', { name, count: middlewareManager.getMiddlewares().length });
   }
   
   /**
@@ -266,11 +328,11 @@ export class UCPManager extends EventEmitter {
   }
   
   /**
-   * 关闭管理器
+   * 关闭管理器 (使用核心生命周期)
    */
   async close(): Promise<void> {
     await this.stop();
-    this.emit('closed');
+    this.emit('ucp:manager_closed');
   }
   
   /**
@@ -302,12 +364,14 @@ export class UCPManager extends EventEmitter {
   }
   
   /**
-   * 获取健康状态
+   * 获取健康状态 (使用核心状态信息)
    */
   getHealthStatus() {
+    const coreInfo = this.getInfo();
     return {
-      status: this.isStarted ? 'healthy' : 'stopped',
-      uptime: this.isStarted ? process.uptime() : 0,
+      status: coreInfo.state === 'started' ? 'healthy' : 'stopped',
+      uptime: coreInfo.uptime,
+      service: this.config.service,
       protocols: Object.fromEntries(
         Array.from(this.adapters.keys()).map(protocol => [
           protocol,
@@ -317,7 +381,8 @@ export class UCPManager extends EventEmitter {
       connections: {
         clients: this.clients.size,
         servers: this.servers.size
-      }
+      },
+      core: coreInfo
     };
   }
   
