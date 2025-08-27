@@ -5,30 +5,22 @@
  */
 
 // 核心序列化器
-export * from './core/protobuf-serializer';
-export * from './core/schema-compiler';
-export * from './core/message-factory';
+export * from './core/protobuf-serializer.js';
+export * from './core/schema-compiler.js';
+export * from './core/message-factory.js';
 
 // Schema管理
-export * from './schema/schema-registry';
-export * from './schema/schema-validator';
-export * from './schema/proto-parser';
-
-// 代码生成
-export * from './codegen/typescript-generator';
-export * from './codegen/proto-generator';
-
-// 优化器
-export * from './optimizers/binary-optimizer';
-export * from './optimizers/compression-optimizer';
+export * from './schema/schema-registry.js';
+export * from './schema/schema-validator.js';
+export * from './schema/proto-parser.js';
 
 // 工具函数
-export * from './utils/protobuf-utils';
-export * from './utils/binary-utils';
+export * from './utils/protobuf-utils.js';
+export * from './utils/binary-utils.js';
 
 // 常量和类型
-export * from './constants/protobuf-constants';
-export * from './types/protobuf-types';
+export * from './constants/protobuf-constants.js';
+export * from './types/protobuf-types.js';
 
 // 默认导出
-export { ProtobufSerializer } from './core/protobuf-serializer';
+export { ProtobufSerializer } from './core/protobuf-serializer.js';

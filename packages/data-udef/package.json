@@ -2,13 +2,13 @@
   "name": "@sker/data-udef",
   "version": "1.0.0",
   "description": "Sker统一数据交换格式(UDEF)实现包，提供跨语言数据序列化和标准消息格式",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },

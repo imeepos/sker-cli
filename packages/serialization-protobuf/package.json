@@ -2,13 +2,13 @@
   "name": "@sker/serialization-protobuf",
   "version": "1.0.0",
   "description": "Sker Protocol Buffers序列化器实现包，提供高性能二进制序列化功能",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
@@ -56,10 +56,17 @@
     "@sker/constants": "workspace:*",
     "@sker/utils": "workspace:*",
     "@sker/logger": "workspace:*",
-    "@sker/error-core": "workspace:*"
+    "@sker/error-core": "workspace:*",
+    "protobufjs": "^7.2.5",
+    "protobufjs-cli": "^1.1.1",
+    "long": "^5.2.3",
+    "pako": "^2.1.0",
+    "lz4js": "^0.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/long": "^4.0.2",
+    "@types/pako": "^2.0.3",
     "eslint": "^8.0.0",
     "rimraf": "^5.0.0",
     "tsup": "^8.0.0",

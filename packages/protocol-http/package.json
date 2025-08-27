@@ -2,13 +2,13 @@
   "name": "@sker/protocol-http",
   "version": "1.0.0",
   "description": "Sker HTTP/REST协议实现包，提供灵活RESTful API通信能力",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
@@ -53,13 +53,14 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@sker/types": "workspace:*",
     "@sker/constants": "workspace:*",
-    "@sker/utils": "workspace:*",
-    "@sker/logger": "workspace:*",
     "@sker/error-core": "workspace:*",
+    "@sker/logger": "workspace:*",
     "@sker/protocol-ucp": "workspace:*",
-    "@sker/serialization-json": "workspace:*"
+    "@sker/serialization-json": "workspace:*",
+    "@sker/types": "workspace:*",
+    "@sker/utils": "workspace:*",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

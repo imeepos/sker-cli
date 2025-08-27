@@ -2,13 +2,13 @@
   "name": "@sker/protocol-ucp",
   "version": "1.0.0",
   "description": "Sker统一通信协议(UCP)实现包，提供跨语言跨进程跨端通信的统一协议抽象层",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
@@ -54,14 +54,16 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@sker/types": "workspace:*",
     "@sker/constants": "workspace:*",
-    "@sker/utils": "workspace:*",
+    "@sker/error-core": "workspace:*",
     "@sker/logger": "workspace:*",
-    "@sker/error-core": "workspace:*"
+    "@sker/types": "workspace:*",
+    "@sker/utils": "workspace:*",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/ws": "^8.18.1",
     "eslint": "^8.0.0",
     "rimraf": "^5.0.0",
     "tsup": "^8.0.0",
