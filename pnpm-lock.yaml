@@ -45,6 +45,9 @@ importers:
       tsx:
         specifier: ^4.0.0
         version: 4.20.5
+      turbo:
+        specifier: ^2.5.6
+        version: 2.5.6
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
@@ -217,6 +220,9 @@ importers:
       '@sker/utils':
         specifier: workspace:*
         version: link:../utils
+      events:
+        specifier: ^3.3.0
+        version: 3.3.0
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -1043,67 +1049,56 @@ packages:
     resolution: {integrity: sha512-3zEuZsXfKaw8n/yF7t8N6NNdhyFw3s8xJTqjbTDXlipwrEHo4GtIKcMJr5Ed29leLpB9AugtAQpAHW0jvtKKaQ==}
     cpu: [arm]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.48.1':
     resolution: {integrity: sha512-leo9tOIlKrcBmmEypzunV/2w946JeLbTdDlwEZ7OnnsUyelZ72NMnT4B2vsikSgwQifjnJUbdXzuW4ToN1wV+Q==}
     cpu: [arm]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.48.1':
     resolution: {integrity: sha512-Vy/WS4z4jEyvnJm+CnPfExIv5sSKqZrUr98h03hpAMbE2aI0aD2wvK6GiSe8Gx2wGp3eD81cYDpLLBqNb2ydwQ==}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.48.1':
     resolution: {integrity: sha512-x5Kzn7XTwIssU9UYqWDB9VpLpfHYuXw5c6bJr4Mzv9kIv242vmJHbI5PJJEnmBYitUIfoMCODDhR7KoZLot2VQ==}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-loongarch64-gnu@4.48.1':
     resolution: {integrity: sha512-yzCaBbwkkWt/EcgJOKDUdUpMHjhiZT/eDktOPWvSRpqrVE04p0Nd6EGV4/g7MARXXeOqstflqsKuXVM3H9wOIQ==}
     cpu: [loong64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-ppc64-gnu@4.48.1':
     resolution: {integrity: sha512-UK0WzWUjMAJccHIeOpPhPcKBqax7QFg47hwZTp6kiMhQHeOYJeaMwzeRZe1q5IiTKsaLnHu9s6toSYVUlZ2QtQ==}
     cpu: [ppc64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-gnu@4.48.1':
     resolution: {integrity: sha512-3NADEIlt+aCdCbWVZ7D3tBjBX1lHpXxcvrLt/kdXTiBrOds8APTdtk2yRL2GgmnSVeX4YS1JIf0imFujg78vpw==}
     cpu: [riscv64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-musl@4.48.1':
     resolution: {integrity: sha512-euuwm/QTXAMOcyiFCcrx0/S2jGvFlKJ2Iro8rsmYL53dlblp3LkUQVFzEidHhvIPPvcIsxDhl2wkBE+I6YVGzA==}
     cpu: [riscv64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-s390x-gnu@4.48.1':
     resolution: {integrity: sha512-w8mULUjmPdWLJgmTYJx/W6Qhln1a+yqvgwmGXcQl2vFBkWsKGUBRbtLRuKJUln8Uaimf07zgJNxOhHOvjSQmBQ==}
     cpu: [s390x]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.48.1':
     resolution: {integrity: sha512-90taWXCWxTbClWuMZD0DKYohY1EovA+W5iytpE89oUPmT5O1HFdf8cuuVIylE6vCbrGdIGv85lVRzTcpTRZ+kA==}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.48.1':
     resolution: {integrity: sha512-2Gu29SkFh1FfTRuN1GR1afMuND2GKzlORQUP3mNMJbqdndOg7gNsa81JnORctazHRokiDzQ5+MLE5XYmZW5VWg==}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-win32-arm64-msvc@4.48.1':
     resolution: {integrity: sha512-6kQFR1WuAO50bxkIlAVeIYsz3RUx+xymwhTo9j94dJ+kmHe9ly7muH23sdfWduD0BA8pD9/yhonUvAjxGh34jQ==}
@@ -1505,6 +1500,10 @@ packages:
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
+
+  events@3.3.0:
+    resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
+    engines: {node: '>=0.8.x'}
 
   execa@8.0.1:
     resolution: {integrity: sha512-VyhnebXciFV2DESc+p6B+y0LjSm0krU4OgJN44qFAhBY0TJ+1V61tYD2+wHusZ6F9n5K+vl8k0sTy7PEfV4qpg==}
@@ -2170,6 +2169,7 @@ packages:
   source-map@0.8.0-beta.0:
     resolution: {integrity: sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA==}
     engines: {node: '>= 8'}
+    deprecated: The work that was done in this beta branch won't be included in future versions
 
   spawndamnit@3.0.1:
     resolution: {integrity: sha512-MmnduQUuHCoFckZoWnXsTg7JaiLBJrKFj9UI2MbRPGaJeVpsLcVBu6P/IGZovziM/YBsellCmsprgNA+w0CzVg==}
@@ -2305,6 +2305,40 @@ packages:
   tsx@4.20.5:
     resolution: {integrity: sha512-+wKjMNU9w/EaQayHXb7WA7ZaHY6hN8WgfvHNQ3t1PnU91/7O8TcTnIhCDYTZwnt8JsO9IBqZ30Ln1r7pPF52Aw==}
     engines: {node: '>=18.0.0'}
+    hasBin: true
+
+  turbo-darwin-64@2.5.6:
+    resolution: {integrity: sha512-3C1xEdo4aFwMJAPvtlPqz1Sw/+cddWIOmsalHFMrsqqydcptwBfu26WW2cDm3u93bUzMbBJ8k3zNKFqxJ9ei2A==}
+    cpu: [x64]
+    os: [darwin]
+
+  turbo-darwin-arm64@2.5.6:
+    resolution: {integrity: sha512-LyiG+rD7JhMfYwLqB6k3LZQtYn8CQQUePbpA8mF/hMLPAekXdJo1g0bUPw8RZLwQXUIU/3BU7tXENvhSGz5DPA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  turbo-linux-64@2.5.6:
+    resolution: {integrity: sha512-GOcUTT0xiT/pSnHL4YD6Yr3HreUhU8pUcGqcI2ksIF9b2/r/kRHwGFcsHgpG3+vtZF/kwsP0MV8FTlTObxsYIA==}
+    cpu: [x64]
+    os: [linux]
+
+  turbo-linux-arm64@2.5.6:
+    resolution: {integrity: sha512-10Tm15bruJEA3m0V7iZcnQBpObGBcOgUcO+sY7/2vk1bweW34LMhkWi8svjV9iDF68+KJDThnYDlYE/bc7/zzQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  turbo-windows-64@2.5.6:
+    resolution: {integrity: sha512-FyRsVpgaj76It0ludwZsNN40ytHN+17E4PFJyeliBEbxrGTc5BexlXVpufB7XlAaoaZVxbS6KT8RofLfDRyEPg==}
+    cpu: [x64]
+    os: [win32]
+
+  turbo-windows-arm64@2.5.6:
+    resolution: {integrity: sha512-j/tWu8cMeQ7HPpKri6jvKtyXg9K1gRyhdK4tKrrchH8GNHscPX/F71zax58yYtLRWTiK04zNzPcUJuoS0+v/+Q==}
+    cpu: [arm64]
+    os: [win32]
+
+  turbo@2.5.6:
+    resolution: {integrity: sha512-gxToHmi9oTBNB05UjUsrWf0OyN5ZXtD0apOarC1KIx232Vp3WimRNy3810QzeNSgyD5rsaIDXlxlbnOzlouo+w==}
     hasBin: true
 
   type-check@0.3.2:
@@ -3419,6 +3453,8 @@ snapshots:
 
   esutils@2.0.3: {}
 
+  events@3.3.0: {}
+
   execa@8.0.1:
     dependencies:
       cross-spawn: 7.0.6
@@ -4203,6 +4239,33 @@ snapshots:
       get-tsconfig: 4.10.1
     optionalDependencies:
       fsevents: 2.3.3
+
+  turbo-darwin-64@2.5.6:
+    optional: true
+
+  turbo-darwin-arm64@2.5.6:
+    optional: true
+
+  turbo-linux-64@2.5.6:
+    optional: true
+
+  turbo-linux-arm64@2.5.6:
+    optional: true
+
+  turbo-windows-64@2.5.6:
+    optional: true
+
+  turbo-windows-arm64@2.5.6:
+    optional: true
+
+  turbo@2.5.6:
+    optionalDependencies:
+      turbo-darwin-64: 2.5.6
+      turbo-darwin-arm64: 2.5.6
+      turbo-linux-64: 2.5.6
+      turbo-linux-arm64: 2.5.6
+      turbo-windows-64: 2.5.6
+      turbo-windows-arm64: 2.5.6
 
   type-check@0.3.2:
     dependencies:
