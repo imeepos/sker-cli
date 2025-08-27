@@ -442,7 +442,7 @@ declare class SkerCore extends EventBus {
         interval?: number;
         threshold?: number;
     }): void;
-    private setupEventHandlers;
+    setupEventHandlers(): void;
     private registerPlugins;
     private setupLifecycleHooks;
 }

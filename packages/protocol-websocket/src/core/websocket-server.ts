@@ -2,36 +2,36 @@
  * @sker/protocol-websocket - WebSocket服务器核心实现
  */
 
-import { SkerCore } from '@sker/core';
+import { SkerCore, MiddlewareContext } from '@sker/core';
 import { EventEmitter } from 'events';
 import { Server } from 'http';
 import { WebSocketServer as WSServer } from 'ws';
 import { Logger } from '@sker/logger';
-import { 
-  ServerConfig, 
-  WebSocketConnection, 
-  MessageHandler, 
+import {
+  ServerConfig,
+  WebSocketConnection,
+  MessageHandler,
   Middleware,
   WebSocketState,
   ConnectionInfo,
   User,
   WebSocketServerOptions
 } from '../types/websocket-types.js';
-import { 
-  DEFAULT_SERVER_CONFIG, 
-  WebSocketEvent, 
-  WebSocketCloseCode, 
-  MessageTypes 
+import {
+  DEFAULT_SERVER_CONFIG,
+  WebSocketEvent,
+  WebSocketCloseCode,
+  MessageTypes
 } from '../constants/websocket-constants.js';
 import { ConnectionManager } from './connection-manager.js';
 import { WebSocketEventEmitter } from '../events/event-emitter.js';
 import { DefaultMessageHandler } from '../events/message-handler.js';
 import { LifecycleHandler } from '../events/lifecycle-handler.js';
-import { 
-  generateConnectionId, 
-  deepMerge, 
+import {
+  generateConnectionId,
+  deepMerge,
   formatConnectionInfo,
-  parseUserAgent 
+  parseUserAgent
 } from '../utils/websocket-utils.js';
 
 export class WebSocketServer extends SkerCore {
@@ -51,26 +51,26 @@ export class WebSocketServer extends SkerCore {
       environment: options.environment || 'development',
       ...options.coreOptions
     });
-    
+
     this.config = deepMerge(DEFAULT_SERVER_CONFIG as ServerConfig, options.serverConfig || {});
-    this.logger = new Logger({ 
+    this.logger = new Logger({
       name: 'WebSocketServer',
       level: (this.config.monitoring?.logging?.level as any) || 'info'
     });
-    
+
     this.eventEmitter = new WebSocketEventEmitter(this.logger);
     this.connectionManager = new ConnectionManager(
       this.config.websocket?.connection,
       this.logger
     );
-    
+
     this.messageHandler = new DefaultMessageHandler(this.logger, this.eventEmitter);
     this.lifecycleHandler = new LifecycleHandler(this.logger, this.eventEmitter);
-    
+
     // 设置生命周期钩子
     this.getLifecycle().onStart(this.startWebSocketServer.bind(this));
     this.getLifecycle().onStop(this.stopWebSocketServer.bind(this));
-    
+
     // 设置核心中间件
     this.setupCoreMiddleware();
     this.setupEventHandlers();
@@ -82,7 +82,7 @@ export class WebSocketServer extends SkerCore {
    */
   private setupCoreMiddleware(): void {
     const middleware = this.getMiddleware();
-    
+
     // WebSocket连接日志中间件
     middleware.use(async (context: any, next: () => Promise<any>) => {
       const start = Date.now();
@@ -91,7 +91,7 @@ export class WebSocketServer extends SkerCore {
         messageType: context.messageType,
         timestamp: start
       });
-      
+
       try {
         const result = await next();
         const duration = Date.now() - start;
@@ -156,7 +156,7 @@ export class WebSocketServer extends SkerCore {
           }
         });
       });
-      
+
       this.logger.info('WebSocket server started successfully', {
         address: `ws://${this.config.host}:${this.config.port}`
       });
@@ -170,7 +170,7 @@ export class WebSocketServer extends SkerCore {
       this.logger.error('Failed to start WebSocket server', {
         error: error instanceof Error ? error.message : String(error)
       });
-      
+
       await this.cleanup();
       this.emit('ws:server_error', error);
       throw error;
@@ -201,7 +201,7 @@ export class WebSocketServer extends SkerCore {
       }
 
       await this.cleanup();
-      
+
       this.logger.info('WebSocket server stopped successfully');
       this.emit('ws:server_stopped');
 
@@ -216,8 +216,8 @@ export class WebSocketServer extends SkerCore {
 
   private validateConfiguration(): void {
 
-    if (this.config.websocket?.connection?.maxConnections && 
-        this.config.websocket.connection.maxConnections < 1) {
+    if (this.config.websocket?.connection?.maxConnections &&
+      this.config.websocket.connection.maxConnections < 1) {
       throw new Error('maxConnections must be greater than 0');
     }
 
@@ -228,14 +228,14 @@ export class WebSocketServer extends SkerCore {
     });
   }
 
-  private override setupEventHandlers(): void {
+  override setupEventHandlers(): void {
     // 连接管理器事件
     this.connectionManager.on(WebSocketEvent.CONNECTION, (connection: WebSocketConnection) => {
       this.emit(WebSocketEvent.CONNECTION, connection);
     });
 
     this.connectionManager.on(WebSocketEvent.DISCONNECT, (connection: WebSocketConnection, reason: string) => {
-      this.emit(WebSocketEvent.DISCONNECT, connection, reason);
+      this.emit(WebSocketEvent.DISCONNECT, { connection, reason });
     });
 
     // 生命周期处理器事件
@@ -307,8 +307,9 @@ export class WebSocketServer extends SkerCore {
         });
       });
 
-      this.isStarted = true;
-      
+      // Set started state using parent class method
+      await super.start();
+
       this.logger.info('WebSocket server started successfully', {
         address: `ws://${this.config.host}:${this.config.port}`
       });
@@ -319,13 +320,13 @@ export class WebSocketServer extends SkerCore {
       this.logger.error('Failed to start WebSocket server', {
         error: error instanceof Error ? error.message : String(error)
       });
-      
+
       await this.cleanup();
       throw error;
     }
   }
 
-  async stop(timeout: number = 30000): Promise<void> {
+  override async stop(timeout: number = 30000): Promise<void> {
     if (!this.isStarted) {
       return;
     }
@@ -349,8 +350,9 @@ export class WebSocketServer extends SkerCore {
       }
 
       await this.cleanup();
-      
-      this.isStarted = false;
+
+      // Use parent class method to properly set stopped state
+      await super.stop();
       this.logger.info('WebSocket server stopped successfully');
       this.emit('stopped');
 
@@ -366,7 +368,7 @@ export class WebSocketServer extends SkerCore {
     // 清理资源
     this.wsServer = undefined;
     this.server = undefined;
-    
+
     // 移除所有事件监听器
     this.removeAllListeners();
   }
@@ -410,18 +412,18 @@ export class WebSocketServer extends SkerCore {
       this.logger.error('Error handling new connection', {
         error: error instanceof Error ? error.message : String(error)
       });
-      
+
       ws.close(WebSocketCloseCode.INTERNAL_ERROR, 'Connection setup failed');
     }
   }
 
   private createConnection(
-    ws: any, 
-    info: ConnectionInfo, 
+    ws: any,
+    info: ConnectionInfo,
     clientInfo: any
   ): WebSocketConnection {
     const connection = new EventEmitter() as WebSocketConnection;
-    
+
     // 设置基本属性
     connection.id = info.id;
     connection.info = info;
@@ -448,7 +450,7 @@ export class WebSocketServer extends SkerCore {
       if (connection.state === 'CLOSED' || connection.state === 'CLOSING') {
         return;
       }
-      
+
       connection.state = 'CLOSING';
       ws.close(code || WebSocketCloseCode.NORMAL_CLOSURE, reason);
     };
@@ -469,17 +471,17 @@ export class WebSocketServer extends SkerCore {
       try {
         const messageStr = data.toString('utf8');
         const message = JSON.parse(messageStr);
-        
+
         // 通过消息处理器处理消息
         await this.messageHandler.handleMessage(connection, message);
-        
+
         connection.emit('message', message);
       } catch (error) {
         this.logger.error('Error processing message', {
           connectionId: connection.id,
           error: error instanceof Error ? error.message : String(error)
         });
-        
+
         connection.emit('error', error);
       }
     });
@@ -487,7 +489,7 @@ export class WebSocketServer extends SkerCore {
     ws.on('close', (code: number, reason: Buffer) => {
       connection.state = 'CLOSED';
       const reasonStr = reason.toString('utf8');
-      
+
       this.connectionManager.removeConnection(connection.id, reasonStr);
       connection.emit('close', code, reasonStr);
     });
@@ -497,7 +499,7 @@ export class WebSocketServer extends SkerCore {
         connectionId: connection.id,
         error: error.message
       });
-      
+
       connection.emit('error', error);
     });
 
@@ -513,11 +515,11 @@ export class WebSocketServer extends SkerCore {
   }
 
   private getClientIP(request: any): string {
-    return request.headers['x-forwarded-for']?.split(',')[0] || 
-           request.headers['x-real-ip'] || 
-           request.connection?.remoteAddress || 
-           request.socket?.remoteAddress || 
-           '127.0.0.1';
+    return request.headers['x-forwarded-for']?.split(',')[0] ||
+      request.headers['x-real-ip'] ||
+      request.connection?.remoteAddress ||
+      request.socket?.remoteAddress ||
+      '127.0.0.1';
   }
 
   private handleProtocols(protocols: Set<string>): string | false {
@@ -537,7 +539,7 @@ export class WebSocketServer extends SkerCore {
       error: error.message,
       stack: error.stack
     });
-    
+
     this.emit('error', error);
   }
 
@@ -547,7 +549,7 @@ export class WebSocketServer extends SkerCore {
       const origin = request.headers.origin;
       if (this.isOriginAllowed(origin)) {
         headers.push('Access-Control-Allow-Origin: ' + origin);
-        
+
         if (this.config.cors.credentials) {
           headers.push('Access-Control-Allow-Credentials: true');
         }
@@ -569,7 +571,8 @@ export class WebSocketServer extends SkerCore {
 
   private applyMiddlewares(connection: WebSocketConnection): void {
     // 应用中间件到连接
-    for (const middleware of this.middlewares) {
+    const middlewares = this.getMiddleware().getMiddlewares();
+    for (const middleware of middlewares) {
       try {
         // 中间件应用逻辑
         this.logger.debug('Applying middleware', {
@@ -596,21 +599,35 @@ export class WebSocketServer extends SkerCore {
   public use(middlewares: string[]): void;
   public use(nameOrArray: string | string[], middleware?: Middleware): void {
     const middlewareManager = this.getMiddleware();
-    
+
     if (Array.isArray(nameOrArray)) {
       // 如果是字符串数组，创建内置中间件
       for (const middlewareName of nameOrArray) {
         const builtinMiddleware = this.createBuiltinMiddleware(middlewareName);
         if (builtinMiddleware) {
-          middlewareManager.use(builtinMiddleware.execute, { name: middlewareName });
+          // Wrap WebSocket middleware to match core middleware interface
+          const wrappedMiddleware = async (context: MiddlewareContext, next: () => Promise<void>) => {
+            // Create a mock WebSocket connection context if needed
+            const connection: WebSocketConnection = context.data as WebSocketConnection;
+            const message = context.request;
+            
+            return await builtinMiddleware.execute(connection, message, () => next());
+          };
+          middlewareManager.use(wrappedMiddleware, { name: middlewareName });
         }
       }
     } else if (middleware) {
-      // 直接注册中间件
-      middlewareManager.use(middleware.execute, { name: nameOrArray });
+      // 直接注册中间件 - wrap WebSocket middleware to match core interface
+      const wrappedMiddleware = async (context: MiddlewareContext, next: () => Promise<void>) => {
+        const connection: WebSocketConnection = context.data as WebSocketConnection;
+        const message = context.request;
+        
+        return await middleware.execute(connection, message, () => next());
+      };
+      middlewareManager.use(wrappedMiddleware, { name: nameOrArray });
     }
-    
-    this.logger.debug('Middleware added', { 
+
+    this.logger.debug('Middleware added', {
       name: nameOrArray,
       count: middlewareManager.getMiddlewares().length
     });
@@ -678,7 +695,7 @@ export class WebSocketServer extends SkerCore {
 
   public async gracefulShutdown(timeout: number = 30000): Promise<void> {
     this.logger.info('Starting graceful shutdown', { timeout });
-    
+
     try {
       // 发送关闭通知到所有连接
       const connections = this.connectionManager.getAllConnections();
@@ -705,7 +722,7 @@ export class WebSocketServer extends SkerCore {
 
       // 执行正常关闭
       await this.stop(timeout);
-      
+
     } catch (error) {
       this.logger.error('Error during graceful shutdown', {
         error: error instanceof Error ? error.message : String(error)

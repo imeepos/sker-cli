@@ -213,7 +213,7 @@ export class SkerCore extends EventBus {
     }, interval);
   }
 
-  private setupEventHandlers(): void {
+  setupEventHandlers(): void {
     this.lifecycleManager.on(ERROR, (error) => {
       this.emit(LIFECYCLE_ERROR, error);
     });

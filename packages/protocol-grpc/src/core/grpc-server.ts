@@ -8,9 +8,10 @@ import {
   ServiceHandler, 
   ServiceRegistrationOptions, 
   ServerMiddleware, 
-  MiddlewareContext,
+  MiddlewareContext as GRPCMiddlewareContext,
   GRPCServerOptions 
 } from '../types/grpc-types.js';
+import { MiddlewareContext } from '@sker/core';
 import { DEFAULT_SERVER_CONFIG } from '../constants/grpc-constants.js';
 import { ServiceRegistry } from './service-registry.js';
 
@@ -46,10 +47,12 @@ export class GRPCServer extends SkerCore {
     const middleware = this.getMiddleware();
     
     // 添加请求日志中间件
-    middleware.use('grpc-logger', async (context, next) => {
+    middleware.use(async (context, next) => {
       const start = Date.now();
+      // Extract method from context metadata if available
+      const method = context.metadata?.method || 'unknown';
       this.emit('request:start', {
-        method: context.method,
+        method,
         timestamp: start
       });
       
@@ -57,7 +60,7 @@ export class GRPCServer extends SkerCore {
         const result = await next();
         const duration = Date.now() - start;
         this.emit('request:success', {
-          method: context.method,
+          method,
           duration,
           timestamp: start
         });
@@ -65,7 +68,7 @@ export class GRPCServer extends SkerCore {
       } catch (error) {
         const duration = Date.now() - start;
         this.emit('request:error', {
-          method: context.method,
+          method,
           error,
           duration,
           timestamp: start
@@ -113,7 +116,27 @@ export class GRPCServer extends SkerCore {
     const middlewareArray = Array.isArray(middlewares) ? middlewares : [middlewares];
     
     middlewareArray.forEach((middleware, index) => {
-      middlewareManager.use(middleware, { name: `${name}-${index}` });
+      // Wrap gRPC middleware to match core middleware interface
+      const wrappedMiddleware = async (context: MiddlewareContext, next: () => Promise<void>) => {
+        // Create gRPC-specific context from core context
+        const grpcContext: GRPCMiddlewareContext = {
+          service: context.metadata?.service || '',
+          method: context.metadata?.method || '',
+          peer: context.metadata?.peer || '',
+          getMetadata: () => new Map(),
+          setUser: (user: any) => {
+            if (!context.metadata) context.metadata = {};
+            context.metadata.user = user;
+          }
+        };
+        
+        return await middleware(grpcContext, async () => {
+          await next();
+          return context.response;
+        });
+      };
+      
+      middlewareManager.use(wrappedMiddleware, { name: `${name}-${index}` });
     });
   }
 
@@ -154,7 +177,7 @@ export class GRPCServer extends SkerCore {
    * 优雅关闭服务器
    */
   async gracefulShutdown(timeout: number = 5000): Promise<void> {
-    if (!this.isRunning) {
+    if (!this.isStarted) {
       return;
     }
 
@@ -175,7 +198,8 @@ export class GRPCServer extends SkerCore {
       // 强制关闭剩余连接
       await this.forceCloseConnections();
       
-      this.isRunning = false;
+      // Use the core's stop method to properly set the started state
+      await this.stop();
       this.emit('server:graceful_shutdown_complete');
     } catch (error) {
       this.emit('server:error', error);
@@ -208,7 +232,7 @@ export class GRPCServer extends SkerCore {
     serviceName: string,
     methodName: string,
     request: any,
-    context: MiddlewareContext
+    context: GRPCMiddlewareContext
   ): Promise<any> {
     // 执行中间件链
     const middlewareChain = this.buildMiddlewareChain(serviceName, methodName, request);
@@ -224,9 +248,21 @@ export class GRPCServer extends SkerCore {
     request: any
   ) {
     const middlewareManager = this.getMiddleware();
-    return async (context: MiddlewareContext) => {
+    return async (context: GRPCMiddlewareContext) => {
+      // Convert gRPC context to core middleware context
+      const coreContext: MiddlewareContext = {
+        request,
+        response: undefined,
+        data: undefined,
+        metadata: {
+          service: context.service,
+          method: context.method,
+          peer: context.peer
+        }
+      };
+      
       // 使用核心中间件管理器执行中间件链
-      await middlewareManager.execute(context as any);
+      await middlewareManager.execute(coreContext);
       
       // 执行实际的服务方法
       return await this.executeServiceMethod(serviceName, methodName, request, context);
@@ -240,7 +276,7 @@ export class GRPCServer extends SkerCore {
     serviceName: string,
     methodName: string,
     request: any,
-    context: MiddlewareContext
+    context: GRPCMiddlewareContext
   ): Promise<any> {
     const service = this.serviceRegistry.getService(serviceName);
     if (!service) {
