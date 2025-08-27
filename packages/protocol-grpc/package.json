@@ -2,13 +2,13 @@
   "name": "@sker/protocol-grpc",
   "version": "1.0.0",
   "description": "Sker gRPC协议实现包，提供高性能双向流式RPC通信",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
@@ -58,7 +58,8 @@
     "@sker/logger": "workspace:*",
     "@sker/error-core": "workspace:*",
     "@sker/protocol-ucp": "workspace:*",
-    "@sker/serialization-protobuf": "workspace:*"
+    "@sker/serialization-protobuf": "workspace:*",
+    "events": "^3.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

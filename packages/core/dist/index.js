@@ -11,6 +11,56 @@ var ErrorCodes = /* @__PURE__ */ ((ErrorCodes2) => {
   ErrorCodes2["EVENT_ERROR"] = "EVENT_ERROR";
   return ErrorCodes2;
 })(ErrorCodes || {});
+var ERROR = `ERROR`;
+var MEMORY_USAGE = `MEMORY_USAGE`;
+var MEMORY_THRESHOLD_EXCEEDED = `memoryThresholdExceeded`;
+var LIFECYCLE_ERROR = `lifecycleError`;
+var CONFIG_CHANGE = `change`;
+var CONFIG_RESET = `reset`;
+var LIFECYCLE_STARTING = `starting`;
+var LIFECYCLE_STARTED = `started`;
+var LIFECYCLE_STOPPING = `stopping`;
+var LIFECYCLE_STOPPED = `stopped`;
+var LIFECYCLE_STATE_CHANGED = `stateChanged`;
+var LIFECYCLE_HOOK_EXECUTING = `hookExecuting`;
+var LIFECYCLE_HOOK_EXECUTED = `hookExecuted`;
+var LIFECYCLE_HOOK_ERROR = `hookError`;
+var MIDDLEWARE_ADDED = `middlewareAdded`;
+var MIDDLEWARE_REMOVED = `middlewareRemoved`;
+var MIDDLEWARE_ENABLED = `middlewareEnabled`;
+var MIDDLEWARE_DISABLED = `middlewareDisabled`;
+var MIDDLEWARES_CLEARED = `middlewaresCleared`;
+var MIDDLEWARE_EXECUTING = `middlewareExecuting`;
+var MIDDLEWARE_EXECUTED = `middlewareExecuted`;
+var MIDDLEWARE_ERROR = `middlewareError`;
+var MIDDLEWARE_CHAIN_COMPLETED = `middlewareChainCompleted`;
+var MIDDLEWARE_CHAIN_FAILED = `middlewareChainFailed`;
+var MIDDLEWARE_TIMEOUT = `middlewareTimeout`;
+var MIDDLEWARE_INSERTED = `middlewareInserted`;
+var PLUGIN_REGISTERED = `pluginRegistered`;
+var PLUGIN_UNREGISTERED = `pluginUnregistered`;
+var PLUGIN_SKIPPED = `pluginSkipped`;
+var PLUGIN_INITIALIZING = `pluginInitializing`;
+var PLUGIN_INITIALIZED = `pluginInitialized`;
+var PLUGIN_ERROR = `pluginError`;
+var PLUGIN_DESTROYING = `pluginDestroying`;
+var PLUGIN_DESTROYED = `pluginDestroyed`;
+var PLUGIN_ENABLED = `pluginEnabled`;
+var PLUGIN_DISABLED = `pluginDisabled`;
+var PLUGIN_CONFIG_UPDATED = `pluginConfigUpdated`;
+var CORE_INITIALIZED = `initialized`;
+var CORE_STARTING = `starting`;
+var CORE_STARTED = `started`;
+var CORE_START_FAILED = `startFailed`;
+var CORE_STOPPING = `stopping`;
+var CORE_STOPPED = `stopped`;
+var CORE_STOP_FAILED = `stopFailed`;
+var CORE_RESTARTING = `restarting`;
+var CORE_RESTARTED = `restarted`;
+var CORE_RESTART_FAILED = `restartFailed`;
+var CORE_PLUGIN_ERROR = `pluginError`;
+var CORE_MIDDLEWARE_ERROR = `middlewareError`;
+var CORE_CONFIG_CHANGE = `configChange`;
 
 // src/errors/index.ts
 var SkerError = class _SkerError extends Error {
@@ -244,7 +294,7 @@ var EventBus = class {
   handleError(error, event) {
     console.error(`EventBus error in event "${event}":`, error);
     if (this.listenerCount("error") > 0) {
-      this.emit("error", { error, event });
+      this.emit(ERROR, { error, event });
     }
   }
 };
@@ -272,7 +322,7 @@ var ConfigManager = class extends EventBus {
     const oldValue = this.get(key);
     this.setNestedValue(this.config, key, value);
     if (oldValue !== value) {
-      this.emit("change", { key, value, oldValue });
+      this.emit(CONFIG_CHANGE, { key, value, oldValue });
       this.notifyWatchers(key, value);
     }
   }
@@ -283,7 +333,7 @@ var ConfigManager = class extends EventBus {
     if (this.has(key)) {
       const oldValue = this.get(key);
       this.deleteNestedValue(this.config, key);
-      this.emit("change", { key, value: void 0, oldValue });
+      this.emit(CONFIG_CHANGE, { key, value: void 0, oldValue });
       this.notifyWatchers(key, void 0);
       return true;
     }
@@ -296,7 +346,7 @@ var ConfigManager = class extends EventBus {
     const oldConfig = { ...this.config };
     this.config = {};
     this.loadConfig();
-    this.emit("reset", { oldConfig, newConfig: this.config });
+    this.emit(CONFIG_RESET, { oldConfig, newConfig: this.config });
   }
   onChange(key, handler) {
     if (!this.watchers.has(key)) {
@@ -591,15 +641,15 @@ var LifecycleManager = class extends EventBus {
   async doStart() {
     try {
       this.setState("starting" /* STARTING */);
-      this.emit("starting");
+      this.emit(LIFECYCLE_STARTING, {});
       for (const hook of this.startHooks) {
         await this.executeHook(hook, "start");
       }
       this.setState("started" /* STARTED */);
-      this.emit("started");
+      this.emit(LIFECYCLE_STARTED, {});
     } catch (error) {
       this.setState("error" /* ERROR */);
-      this.emit("error", error);
+      this.emit(ERROR, { error, event: LIFECYCLE_STARTING });
       throw new SkerError(
         "START_FAILED" /* START_FAILED */,
         "Failed to start lifecycle",
@@ -611,15 +661,15 @@ var LifecycleManager = class extends EventBus {
   async doStop() {
     try {
       this.setState("stopping" /* STOPPING */);
-      this.emit("stopping");
+      this.emit(LIFECYCLE_STOPPING, {});
       for (const hook of this.stopHooks) {
         await this.executeHook(hook, "stop");
       }
       this.setState("stopped" /* STOPPED */);
-      this.emit("stopped");
+      this.emit(LIFECYCLE_STOPPED, {});
     } catch (error) {
       this.setState("error" /* ERROR */);
-      this.emit("error", error);
+      this.emit(ERROR, { error, event: LIFECYCLE_STOPPING });
       throw new SkerError(
         "STOP_FAILED" /* STOP_FAILED */,
         "Failed to stop lifecycle",
@@ -632,14 +682,14 @@ var LifecycleManager = class extends EventBus {
     const hookName = hook.name || `anonymous-${phase}-hook`;
     const timeout = hook.timeout || (phase === "start" ? this.options.startTimeout : this.options.stopTimeout);
     try {
-      this.emit("hookExecuting", { name: hookName, phase });
+      this.emit(LIFECYCLE_HOOK_EXECUTING, { name: hookName, phase });
       await Promise.race([
         hook.handler(),
         this.createTimeoutPromise(timeout, hookName, phase)
       ]);
-      this.emit("hookExecuted", { name: hookName, phase });
+      this.emit(LIFECYCLE_HOOK_EXECUTED, { name: hookName, phase });
     } catch (error) {
-      this.emit("hookError", { name: hookName, phase, error });
+      this.emit(LIFECYCLE_HOOK_ERROR, { name: hookName, phase, error });
       throw new SkerError(
         phase === "start" ? "START_FAILED" /* START_FAILED */ : "STOP_FAILED" /* STOP_FAILED */,
         `${phase} hook "${hookName}" failed`,
@@ -661,7 +711,7 @@ var LifecycleManager = class extends EventBus {
   setState(newState) {
     const oldState = this.state;
     this.state = newState;
-    this.emit("stateChanged", { oldState, newState });
+    this.emit(LIFECYCLE_STATE_CHANGED, { oldState, newState });
   }
   setupGracefulShutdown() {
     const signals = ["SIGINT", "SIGTERM"];
@@ -736,7 +786,7 @@ var PluginManager = class extends EventBus {
       context,
       initialized: false
     });
-    this.emit("pluginRegistered", { name, plugin, config });
+    this.emit(PLUGIN_REGISTERED, { name, plugin, config });
   }
   unregister(name) {
     const pluginInstance = this.plugins.get(name);
@@ -750,7 +800,7 @@ var PluginManager = class extends EventBus {
       );
     }
     this.plugins.delete(name);
-    this.emit("pluginUnregistered", { name });
+    this.emit(PLUGIN_UNREGISTERED, { name });
   }
   async initialize(name) {
     const pluginInstance = this.plugins.get(name);
@@ -761,17 +811,17 @@ var PluginManager = class extends EventBus {
       return;
     }
     if (pluginInstance.config.enabled === false) {
-      this.emit("pluginSkipped", { name, reason: "disabled" });
+      this.emit(PLUGIN_SKIPPED, { name, reason: "disabled" });
       return;
     }
     try {
-      this.emit("pluginInitializing", { name });
+      this.emit(PLUGIN_INITIALIZING, { name });
       pluginInstance.instance = await pluginInstance.plugin.initialize(pluginInstance.context);
       pluginInstance.initialized = true;
       this.initializationOrder.push(name);
-      this.emit("pluginInitialized", { name });
+      this.emit(PLUGIN_INITIALIZED, { name });
     } catch (error) {
-      this.emit("pluginError", { name, error, phase: "initialize" });
+      this.emit(PLUGIN_ERROR, { name, error, phase: "initialize" });
       throw new SkerError(
         "PLUGIN_ERROR" /* PLUGIN_ERROR */,
         `Failed to initialize plugin "${name}"`,
@@ -804,7 +854,7 @@ var PluginManager = class extends EventBus {
       return;
     }
     try {
-      this.emit("pluginDestroying", { name });
+      this.emit(PLUGIN_DESTROYING, { name });
       if (typeof pluginInstance.plugin.destroy === "function") {
         await pluginInstance.plugin.destroy();
       }
@@ -814,9 +864,9 @@ var PluginManager = class extends EventBus {
       if (index >= 0) {
         this.initializationOrder.splice(index, 1);
       }
-      this.emit("pluginDestroyed", { name });
+      this.emit(PLUGIN_DESTROYED, { name });
     } catch (error) {
-      this.emit("pluginError", { name, error, phase: "destroy" });
+      this.emit(PLUGIN_ERROR, { name, error, phase: "destroy" });
       throw new SkerError(
         "PLUGIN_ERROR" /* PLUGIN_ERROR */,
         `Failed to destroy plugin "${name}"`,
@@ -889,7 +939,7 @@ var PluginManager = class extends EventBus {
     if (!pluginInstance.initialized) {
       await this.initialize(name);
     }
-    this.emit("pluginEnabled", { name });
+    this.emit(PLUGIN_ENABLED, { name });
   }
   async disable(name) {
     const pluginInstance = this.plugins.get(name);
@@ -903,7 +953,7 @@ var PluginManager = class extends EventBus {
       await this.destroy(name);
     }
     pluginInstance.config.enabled = false;
-    this.emit("pluginDisabled", { name });
+    this.emit(PLUGIN_DISABLED, { name });
   }
   updatePluginConfig(name, config) {
     const pluginInstance = this.plugins.get(name);
@@ -913,7 +963,7 @@ var PluginManager = class extends EventBus {
     const oldConfig = { ...pluginInstance.context.config };
     pluginInstance.context.config = { ...pluginInstance.context.config, ...config };
     pluginInstance.config.options = { ...pluginInstance.config.options, ...config };
-    this.emit("pluginConfigUpdated", { name, oldConfig, newConfig: pluginInstance.context.config });
+    this.emit(PLUGIN_CONFIG_UPDATED, { name, oldConfig, newConfig: pluginInstance.context.config });
   }
 };
 
@@ -936,7 +986,7 @@ var MiddlewareManager = class extends EventBus {
     };
     this.middlewares.push(middleware);
     this.sorted = false;
-    this.emit("middlewareAdded", { middleware });
+    this.emit(MIDDLEWARE_ADDED, { middleware });
   }
   remove(nameOrHandler) {
     const index = this.middlewares.findIndex(
@@ -944,7 +994,7 @@ var MiddlewareManager = class extends EventBus {
     );
     if (index >= 0) {
       const removed = this.middlewares.splice(index, 1)[0];
-      this.emit("middlewareRemoved", { middleware: removed });
+      this.emit(MIDDLEWARE_REMOVED, { middleware: removed });
       return true;
     }
     return false;
@@ -953,7 +1003,7 @@ var MiddlewareManager = class extends EventBus {
     const middleware = this.middlewares.find((mw) => mw.name === name);
     if (middleware) {
       middleware.enabled = true;
-      this.emit("middlewareEnabled", { name });
+      this.emit(MIDDLEWARE_ENABLED, { name });
       return true;
     }
     return false;
@@ -962,7 +1012,7 @@ var MiddlewareManager = class extends EventBus {
     const middleware = this.middlewares.find((mw) => mw.name === name);
     if (middleware) {
       middleware.enabled = false;
-      this.emit("middlewareDisabled", { name });
+      this.emit(MIDDLEWARE_DISABLED, { name });
       return true;
     }
     return false;
@@ -971,7 +1021,7 @@ var MiddlewareManager = class extends EventBus {
     const count = this.middlewares.length;
     this.middlewares = [];
     this.sorted = true;
-    this.emit("middlewaresCleared", { count });
+    this.emit(MIDDLEWARES_CLEARED, { count });
   }
   async execute(context) {
     const enabledMiddlewares = this.getEnabledMiddlewares();
@@ -987,12 +1037,12 @@ var MiddlewareManager = class extends EventBus {
       const middleware = enabledMiddlewares[currentIndex++];
       const middlewareName = middleware.name || `anonymous-${currentIndex}`;
       try {
-        this.emit("middlewareExecuting", { name: middlewareName, context });
+        this.emit(MIDDLEWARE_EXECUTING, { name: middlewareName, context });
         executedMiddlewares.push(middlewareName);
         await middleware.handler(context, next);
-        this.emit("middlewareExecuted", { name: middlewareName, context });
+        this.emit(MIDDLEWARE_EXECUTED, { name: middlewareName, context });
       } catch (error) {
-        this.emit("middlewareError", { name: middlewareName, error, context });
+        this.emit(MIDDLEWARE_ERROR, { name: middlewareName, error, context });
         throw new SkerError(
           "MIDDLEWARE_ERROR" /* MIDDLEWARE_ERROR */,
           `Middleware "${middlewareName}" failed`,
@@ -1003,9 +1053,9 @@ var MiddlewareManager = class extends EventBus {
     };
     try {
       await next();
-      this.emit("middlewareChainCompleted", { executedMiddlewares, context });
+      this.emit(MIDDLEWARE_CHAIN_COMPLETED, { executedMiddlewares, context });
     } catch (error) {
-      this.emit("middlewareChainFailed", { error, executedMiddlewares, context });
+      this.emit(MIDDLEWARE_CHAIN_FAILED, { error, executedMiddlewares, context });
       throw error;
     }
   }
@@ -1026,7 +1076,7 @@ var MiddlewareManager = class extends EventBus {
       ]);
     } catch (error) {
       if (error instanceof SkerError && error.message.includes("timed out")) {
-        this.emit("middlewareTimeout", { timeout, context });
+        this.emit(MIDDLEWARE_TIMEOUT, { timeout, context });
       }
       throw error;
     }
@@ -1068,7 +1118,7 @@ var MiddlewareManager = class extends EventBus {
     };
     this.middlewares.splice(index, 0, middleware);
     this.sorted = false;
-    this.emit("middlewareInserted", { middleware, beforeName });
+    this.emit(MIDDLEWARE_INSERTED, { middleware, beforeName });
     return true;
   }
   insertAfter(afterName, handler, options) {
@@ -1084,7 +1134,7 @@ var MiddlewareManager = class extends EventBus {
     };
     this.middlewares.splice(index + 1, 0, middleware);
     this.sorted = false;
-    this.emit("middlewareInserted", { middleware, afterName });
+    this.emit(MIDDLEWARE_INSERTED, { middleware, afterName });
     return true;
   }
   sortMiddlewares() {
@@ -1133,7 +1183,7 @@ var SkerCore = class extends EventBus {
       this.setupEventHandlers();
       this.registerPlugins();
       this.setupLifecycleHooks();
-      this.emit("initialized", {
+      this.emit(CORE_INITIALIZED, {
         serviceName: this.options.serviceName,
         version: this.options.version,
         environment: this.options.environment
@@ -1170,35 +1220,40 @@ var SkerCore = class extends EventBus {
   }
   async start() {
     try {
-      this.emit("starting");
+      this.emit(CORE_STARTING, {});
       await this.lifecycleManager.start();
-      this.emit("started", {
+      this.emit(CORE_STARTED, {
         serviceName: this.serviceName,
         version: this.version,
         uptime: this.uptime
       });
     } catch (error) {
-      this.emit("startFailed", error);
+      this.emit(CORE_START_FAILED, { error });
       throw error;
     }
   }
   async stop() {
     try {
-      this.emit("stopping");
+      this.emit(CORE_STOPPING, {});
       await this.lifecycleManager.stop();
-      this.emit("stopped", {
+      this.emit(CORE_STOPPED, {
         serviceName: this.serviceName,
         uptime: this.uptime
       });
     } catch (error) {
-      this.emit("stopFailed", error);
+      this.emit(CORE_STOP_FAILED, { error });
       throw error;
     }
   }
   async restart() {
-    this.emit("restarting");
-    await this.lifecycleManager.restart();
-    this.emit("restarted");
+    try {
+      this.emit(CORE_RESTARTING, {});
+      await this.lifecycleManager.restart();
+      this.emit(CORE_RESTARTED, {});
+    } catch (error) {
+      this.emit(CORE_RESTART_FAILED, { error });
+      throw error;
+    }
   }
   getConfig() {
     return this.configManager;
@@ -1244,13 +1299,13 @@ var SkerCore = class extends EventBus {
       const totalMemory = memoryUsage.heapTotal;
       const usedMemory = memoryUsage.heapUsed;
       const usage = usedMemory / totalMemory;
-      this.emit("memoryUsage", {
+      this.emit(MEMORY_USAGE, {
         memoryUsage,
         usage,
         threshold
       });
       if (usage > threshold) {
-        this.emit("memoryThresholdExceeded", {
+        this.emit(MEMORY_THRESHOLD_EXCEEDED, {
           usage,
           threshold,
           memoryUsage
@@ -1259,17 +1314,17 @@ var SkerCore = class extends EventBus {
     }, interval);
   }
   setupEventHandlers() {
-    this.lifecycleManager.on("error", (error) => {
-      this.emit("lifecycleError", error);
+    this.lifecycleManager.on(ERROR, (error) => {
+      this.emit(LIFECYCLE_ERROR, error);
     });
     this.pluginManager.on("pluginError", (data) => {
-      this.emit("pluginError", data);
+      this.emit(CORE_PLUGIN_ERROR, data);
     });
     this.middlewareManager.on("middlewareError", (data) => {
-      this.emit("middlewareError", data);
+      this.emit(CORE_MIDDLEWARE_ERROR, data);
     });
     this.configManager.on("change", (data) => {
-      this.emit("configChange", data);
+      this.emit(CORE_CONFIG_CHANGE, data);
     });
     this.on("error", (error) => {
       console.error("SkerCore error:", error);
@@ -1487,13 +1542,63 @@ function ensureContext() {
   return Context.ensure();
 }
 export {
+  CONFIG_CHANGE,
+  CONFIG_RESET,
+  CORE_CONFIG_CHANGE,
+  CORE_INITIALIZED,
+  CORE_MIDDLEWARE_ERROR,
+  CORE_PLUGIN_ERROR,
+  CORE_RESTARTED,
+  CORE_RESTARTING,
+  CORE_RESTART_FAILED,
+  CORE_STARTED,
+  CORE_STARTING,
+  CORE_START_FAILED,
+  CORE_STOPPED,
+  CORE_STOPPING,
+  CORE_STOP_FAILED,
   ConfigManager,
   Context,
+  ERROR,
   ErrorCodes,
   EventBus,
+  LIFECYCLE_ERROR,
+  LIFECYCLE_HOOK_ERROR,
+  LIFECYCLE_HOOK_EXECUTED,
+  LIFECYCLE_HOOK_EXECUTING,
+  LIFECYCLE_STARTED,
+  LIFECYCLE_STARTING,
+  LIFECYCLE_STATE_CHANGED,
+  LIFECYCLE_STOPPED,
+  LIFECYCLE_STOPPING,
   LifecycleManager,
   LifecycleState,
+  MEMORY_THRESHOLD_EXCEEDED,
+  MEMORY_USAGE,
+  MIDDLEWARES_CLEARED,
+  MIDDLEWARE_ADDED,
+  MIDDLEWARE_CHAIN_COMPLETED,
+  MIDDLEWARE_CHAIN_FAILED,
+  MIDDLEWARE_DISABLED,
+  MIDDLEWARE_ENABLED,
+  MIDDLEWARE_ERROR,
+  MIDDLEWARE_EXECUTED,
+  MIDDLEWARE_EXECUTING,
+  MIDDLEWARE_INSERTED,
+  MIDDLEWARE_REMOVED,
+  MIDDLEWARE_TIMEOUT,
   MiddlewareManager,
+  PLUGIN_CONFIG_UPDATED,
+  PLUGIN_DESTROYED,
+  PLUGIN_DESTROYING,
+  PLUGIN_DISABLED,
+  PLUGIN_ENABLED,
+  PLUGIN_ERROR,
+  PLUGIN_INITIALIZED,
+  PLUGIN_INITIALIZING,
+  PLUGIN_REGISTERED,
+  PLUGIN_SKIPPED,
+  PLUGIN_UNREGISTERED,
   PluginManager,
   SkerCore,
   SkerError,

@@ -1,5 +1,5 @@
 import { EventBus } from '../events/index.js';
-import { MiddlewareHandler, MiddlewareContext } from '../types/index.js';
+import { MiddlewareHandler, MiddlewareContext, MIDDLEWARE_ADDED, MIDDLEWARE_REMOVED, MIDDLEWARE_ENABLED, MIDDLEWARE_DISABLED, MIDDLEWARES_CLEARED, MIDDLEWARE_EXECUTING, MIDDLEWARE_EXECUTED, MIDDLEWARE_ERROR, MIDDLEWARE_CHAIN_COMPLETED, MIDDLEWARE_CHAIN_FAILED, MIDDLEWARE_TIMEOUT, MIDDLEWARE_INSERTED } from '../types/index.js';
 import { SkerError, ErrorCodes } from '../errors/index.js';
 
 interface MiddlewareInfo {
@@ -35,7 +35,7 @@ export class MiddlewareManager extends EventBus {
     this.middlewares.push(middleware);
     this.sorted = false;
 
-    this.emit('middlewareAdded', { middleware });
+    this.emit(MIDDLEWARE_ADDED, { middleware });
   }
 
   public remove(nameOrHandler: string | MiddlewareHandler): boolean {
@@ -46,7 +46,7 @@ export class MiddlewareManager extends EventBus {
 
     if (index >= 0) {
       const removed = this.middlewares.splice(index, 1)[0];
-      this.emit('middlewareRemoved', { middleware: removed });
+      this.emit(MIDDLEWARE_REMOVED, { middleware: removed });
       return true;
     }
 
@@ -57,7 +57,7 @@ export class MiddlewareManager extends EventBus {
     const middleware = this.middlewares.find(mw => mw.name === name);
     if (middleware) {
       middleware.enabled = true;
-      this.emit('middlewareEnabled', { name });
+      this.emit(MIDDLEWARE_ENABLED, { name });
       return true;
     }
     return false;
@@ -67,7 +67,7 @@ export class MiddlewareManager extends EventBus {
     const middleware = this.middlewares.find(mw => mw.name === name);
     if (middleware) {
       middleware.enabled = false;
-      this.emit('middlewareDisabled', { name });
+      this.emit(MIDDLEWARE_DISABLED, { name });
       return true;
     }
     return false;
@@ -77,7 +77,7 @@ export class MiddlewareManager extends EventBus {
     const count = this.middlewares.length;
     this.middlewares = [];
     this.sorted = true;
-    this.emit('middlewaresCleared', { count });
+    this.emit(MIDDLEWARES_CLEARED, { count });
   }
 
   public async execute(context: MiddlewareContext): Promise<void> {
@@ -99,14 +99,14 @@ export class MiddlewareManager extends EventBus {
       const middlewareName = middleware.name || `anonymous-${currentIndex}`;
       
       try {
-        this.emit('middlewareExecuting', { name: middlewareName, context });
+        this.emit(MIDDLEWARE_EXECUTING, { name: middlewareName, context });
         executedMiddlewares.push(middlewareName);
         
         await middleware.handler(context, next);
         
-        this.emit('middlewareExecuted', { name: middlewareName, context });
+        this.emit(MIDDLEWARE_EXECUTED, { name: middlewareName, context });
       } catch (error) {
-        this.emit('middlewareError', { name: middlewareName, error, context });
+        this.emit(MIDDLEWARE_ERROR, { name: middlewareName, error, context });
         throw new SkerError(
           ErrorCodes.MIDDLEWARE_ERROR,
           `Middleware "${middlewareName}" failed`,
@@ -118,9 +118,9 @@ export class MiddlewareManager extends EventBus {
 
     try {
       await next();
-      this.emit('middlewareChainCompleted', { executedMiddlewares, context });
+      this.emit(MIDDLEWARE_CHAIN_COMPLETED, { executedMiddlewares, context });
     } catch (error) {
-      this.emit('middlewareChainFailed', { error, executedMiddlewares, context });
+      this.emit(MIDDLEWARE_CHAIN_FAILED, { error, executedMiddlewares, context });
       throw error;
     }
   }
@@ -146,7 +146,7 @@ export class MiddlewareManager extends EventBus {
       ]);
     } catch (error) {
       if (error instanceof SkerError && error.message.includes('timed out')) {
-        this.emit('middlewareTimeout', { timeout, context });
+        this.emit(MIDDLEWARE_TIMEOUT, { timeout, context });
       }
       throw error;
     }
@@ -211,7 +211,7 @@ export class MiddlewareManager extends EventBus {
     this.middlewares.splice(index, 0, middleware);
     this.sorted = false;
 
-    this.emit('middlewareInserted', { middleware, beforeName });
+    this.emit(MIDDLEWARE_INSERTED, { middleware, beforeName });
     return true;
   }
 
@@ -239,7 +239,7 @@ export class MiddlewareManager extends EventBus {
     this.middlewares.splice(index + 1, 0, middleware);
     this.sorted = false;
 
-    this.emit('middlewareInserted', { middleware, afterName });
+    this.emit(MIDDLEWARE_INSERTED, { middleware, afterName });
     return true;
   }
 

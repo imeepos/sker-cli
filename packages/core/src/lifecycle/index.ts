@@ -1,5 +1,5 @@
 import { EventBus } from '../events/index.js';
-import { LifecycleOptions, LifecycleHook, AsyncHandler } from '../types/index.js';
+import { LifecycleOptions, LifecycleHook, AsyncHandler, ERROR, LIFECYCLE_STARTING, LIFECYCLE_STARTED, LIFECYCLE_STOPPING, LIFECYCLE_STOPPED, LIFECYCLE_STATE_CHANGED, LIFECYCLE_HOOK_EXECUTING, LIFECYCLE_HOOK_EXECUTED, LIFECYCLE_HOOK_ERROR } from '../types/index.js';
 import { SkerError, ErrorCodes } from '../errors/index.js';
 
 export enum LifecycleState {
@@ -145,17 +145,17 @@ export class LifecycleManager extends EventBus {
   private async doStart(): Promise<void> {
     try {
       this.setState(LifecycleState.STARTING);
-      this.emit('starting');
+      this.emit(LIFECYCLE_STARTING, {});
 
       for (const hook of this.startHooks) {
         await this.executeHook(hook, 'start');
       }
 
       this.setState(LifecycleState.STARTED);
-      this.emit('started');
+      this.emit(LIFECYCLE_STARTED, {});
     } catch (error) {
       this.setState(LifecycleState.ERROR);
-      this.emit('error', error);
+      this.emit(ERROR, { error, event: LIFECYCLE_STARTING });
       
       throw new SkerError(
         ErrorCodes.START_FAILED,
@@ -169,17 +169,17 @@ export class LifecycleManager extends EventBus {
   private async doStop(): Promise<void> {
     try {
       this.setState(LifecycleState.STOPPING);
-      this.emit('stopping');
+      this.emit(LIFECYCLE_STOPPING, {});
 
       for (const hook of this.stopHooks) {
         await this.executeHook(hook, 'stop');
       }
 
       this.setState(LifecycleState.STOPPED);
-      this.emit('stopped');
+      this.emit(LIFECYCLE_STOPPED, {});
     } catch (error) {
       this.setState(LifecycleState.ERROR);
-      this.emit('error', error);
+      this.emit(ERROR, { error, event: LIFECYCLE_STOPPING });
       
       throw new SkerError(
         ErrorCodes.STOP_FAILED,
@@ -195,16 +195,16 @@ export class LifecycleManager extends EventBus {
     const timeout = hook.timeout || (phase === 'start' ? this.options.startTimeout : this.options.stopTimeout);
 
     try {
-      this.emit('hookExecuting', { name: hookName, phase });
+      this.emit(LIFECYCLE_HOOK_EXECUTING, { name: hookName, phase });
       
       await Promise.race([
         hook.handler(),
         this.createTimeoutPromise(timeout!, hookName, phase)
       ]);
 
-      this.emit('hookExecuted', { name: hookName, phase });
+      this.emit(LIFECYCLE_HOOK_EXECUTED, { name: hookName, phase });
     } catch (error) {
-      this.emit('hookError', { name: hookName, phase, error });
+      this.emit(LIFECYCLE_HOOK_ERROR, { name: hookName, phase, error });
       throw new SkerError(
         phase === 'start' ? ErrorCodes.START_FAILED : ErrorCodes.STOP_FAILED,
         `${phase} hook "${hookName}" failed`,
@@ -228,7 +228,7 @@ export class LifecycleManager extends EventBus {
   private setState(newState: LifecycleState): void {
     const oldState = this.state;
     this.state = newState;
-    this.emit('stateChanged', { oldState, newState });
+    this.emit(LIFECYCLE_STATE_CHANGED, { oldState, newState });
   }
 
   private setupGracefulShutdown(): void {

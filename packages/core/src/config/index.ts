@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { ConfigOptions, ConfigSource } from '../types/index.js';
+import { ConfigOptions, ConfigSource, CONFIG_CHANGE, CONFIG_RESET } from '../types/index.js';
 import { SkerError, ErrorCodes } from '../errors/index.js';
 import { EventBus } from '../events/index.js';
 
@@ -29,7 +29,7 @@ export class ConfigManager extends EventBus {
     this.setNestedValue(this.config, key, value);
     
     if (oldValue !== value) {
-      this.emit('change', { key, value, oldValue });
+      this.emit(CONFIG_CHANGE, { key, value, oldValue });
       this.notifyWatchers(key, value);
     }
   }
@@ -43,7 +43,7 @@ export class ConfigManager extends EventBus {
     if (this.has(key)) {
       const oldValue = this.get(key);
       this.deleteNestedValue(this.config, key);
-      this.emit('change', { key, value: undefined, oldValue });
+      this.emit(CONFIG_CHANGE, { key, value: undefined, oldValue });
       this.notifyWatchers(key, undefined);
       return true;
     }
@@ -59,7 +59,7 @@ export class ConfigManager extends EventBus {
     this.config = {};
     this.loadConfig();
     
-    this.emit('reset', { oldConfig, newConfig: this.config });
+    this.emit(CONFIG_RESET, { oldConfig, newConfig: this.config });
   }
 
   public onChange(key: string, handler: (value: any) => void): () => void {

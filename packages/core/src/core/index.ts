@@ -1,4 +1,4 @@
-import { CoreOptions } from '../types/index.js';
+import { CoreOptions, ERROR, LIFECYCLE_ERROR, MEMORY_THRESHOLD_EXCEEDED, MEMORY_USAGE, CORE_INITIALIZED, CORE_STARTING, CORE_STARTED, CORE_START_FAILED, CORE_STOPPING, CORE_STOPPED, CORE_STOP_FAILED, CORE_RESTARTING, CORE_RESTARTED, CORE_RESTART_FAILED, CORE_PLUGIN_ERROR, CORE_MIDDLEWARE_ERROR, CORE_CONFIG_CHANGE } from '../types/index.js';
 import { SkerError, ErrorCodes } from '../errors/index.js';
 import { EventBus } from '../events/index.js';
 import { ConfigManager } from '../config/index.js';
@@ -16,7 +16,7 @@ export class SkerCore extends EventBus {
 
   constructor(options: CoreOptions) {
     super();
-    
+
     if (!options.serviceName) {
       throw new SkerError(
         ErrorCodes.INITIALIZATION_FAILED,
@@ -49,7 +49,7 @@ export class SkerCore extends EventBus {
       this.registerPlugins();
       this.setupLifecycleHooks();
 
-      this.emit('initialized', {
+      this.emit(CORE_INITIALIZED, {
         serviceName: this.options.serviceName,
         version: this.options.version,
         environment: this.options.environment
@@ -94,37 +94,43 @@ export class SkerCore extends EventBus {
 
   public async start(): Promise<void> {
     try {
-      this.emit('starting');
+      this.emit(CORE_STARTING, {});
       await this.lifecycleManager.start();
-      this.emit('started', {
+      this.emit(CORE_STARTED, {
         serviceName: this.serviceName,
         version: this.version,
         uptime: this.uptime
       });
     } catch (error) {
-      this.emit('startFailed', error);
+      this.emit(CORE_START_FAILED, { error });
       throw error;
     }
   }
 
   public async stop(): Promise<void> {
     try {
-      this.emit('stopping');
+      this.emit(CORE_STOPPING, {});
       await this.lifecycleManager.stop();
-      this.emit('stopped', {
+      this.emit(CORE_STOPPED, {
         serviceName: this.serviceName,
         uptime: this.uptime
       });
     } catch (error) {
-      this.emit('stopFailed', error);
+      this.emit(CORE_STOP_FAILED, { error });
       throw error;
     }
   }
 
   public async restart(): Promise<void> {
-    this.emit('restarting');
-    await this.lifecycleManager.restart();
-    this.emit('restarted');
+    try {
+      this.emit(CORE_RESTARTING, {});
+      await this.lifecycleManager.restart();
+      this.emit(CORE_RESTARTED, {});
+    } catch (error) {
+      this.emit(CORE_RESTART_FAILED, { error });
+      throw error;
+    }
+
   }
 
   public getConfig(): ConfigManager {
@@ -191,14 +197,14 @@ export class SkerCore extends EventBus {
       const usedMemory = memoryUsage.heapUsed;
       const usage = usedMemory / totalMemory;
 
-      this.emit('memoryUsage', {
+      this.emit(MEMORY_USAGE, {
         memoryUsage,
         usage,
-        threshold
+        threshold,
       });
 
       if (usage > threshold) {
-        this.emit('memoryThresholdExceeded', {
+        this.emit(MEMORY_THRESHOLD_EXCEEDED, {
           usage,
           threshold,
           memoryUsage
@@ -208,20 +214,20 @@ export class SkerCore extends EventBus {
   }
 
   private setupEventHandlers(): void {
-    this.lifecycleManager.on('error', (error) => {
-      this.emit('lifecycleError', error);
+    this.lifecycleManager.on(ERROR, (error) => {
+      this.emit(LIFECYCLE_ERROR, error);
     });
 
     this.pluginManager.on('pluginError', (data) => {
-      this.emit('pluginError', data);
+      this.emit(CORE_PLUGIN_ERROR, data);
     });
 
     this.middlewareManager.on('middlewareError', (data) => {
-      this.emit('middlewareError', data);
+      this.emit(CORE_MIDDLEWARE_ERROR, data);
     });
 
     this.configManager.on('change', (data) => {
-      this.emit('configChange', data);
+      this.emit(CORE_CONFIG_CHANGE, data);
     });
 
     this.on('error', (error) => {

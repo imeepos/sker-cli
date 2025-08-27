@@ -1,12 +1,11 @@
-import { EventHandler, AsyncHandler } from '../types/index.js';
+import { EventHandler, AsyncHandler, StringToken, ERROR } from '../types/index.js';
 import { SkerError, ErrorCodes } from '../errors/index.js';
-
 export class EventBus {
   private listeners: Map<string, Set<EventHandler>> = new Map();
   private maxListeners: number = 10;
   private onceListeners: Map<string, Set<EventHandler>> = new Map();
 
-  public on<T = any>(event: string, handler: EventHandler<T>): void {
+  public on<T = any>(event: StringToken<T>, handler: EventHandler<T>): void {
     if (!event || typeof handler !== 'function') {
       throw new SkerError(
         ErrorCodes.EVENT_ERROR,
@@ -19,7 +18,7 @@ export class EventBus {
     }
 
     const handlers = this.listeners.get(event)!;
-    
+
     if (handlers.size >= this.maxListeners) {
       console.warn(
         `Warning: Maximum listeners (${this.maxListeners}) exceeded for event "${event}". ` +
@@ -30,7 +29,7 @@ export class EventBus {
     handlers.add(handler);
   }
 
-  public once<T = any>(event: string, handler: EventHandler<T>): void {
+  public once<T = any>(event: StringToken<T>, handler: EventHandler<T>): void {
     if (!event || typeof handler !== 'function') {
       throw new SkerError(
         ErrorCodes.EVENT_ERROR,
@@ -45,7 +44,7 @@ export class EventBus {
     this.onceListeners.get(event)!.add(handler);
   }
 
-  public off(event: string, handler?: EventHandler): void {
+  public off<T>(event: StringToken<T>, handler?: EventHandler<T>): void {
     if (!event) {
       throw new SkerError(ErrorCodes.EVENT_ERROR, 'Event name is required');
     }
@@ -72,7 +71,7 @@ export class EventBus {
     }
   }
 
-  public emit<T = any>(event: string, data?: T): void {
+  public emit<T = any>(event: StringToken<T>, data?: T): void {
     if (!event) {
       throw new SkerError(ErrorCodes.EVENT_ERROR, 'Event name is required');
     }
@@ -114,7 +113,7 @@ export class EventBus {
     }
   }
 
-  public async emitAsync<T = any>(event: string, data?: T): Promise<void> {
+  public async emitAsync<T = any>(event: StringToken<T>, data?: T): Promise<void> {
     if (!event) {
       throw new SkerError(ErrorCodes.EVENT_ERROR, 'Event name is required');
     }
@@ -161,7 +160,7 @@ export class EventBus {
     }
   }
 
-  public removeAllListeners(event?: string): void {
+  public removeAllListeners<T = any>(event?: StringToken<T>): void {
     if (event) {
       this.listeners.delete(event);
       this.onceListeners.delete(event);
@@ -171,13 +170,13 @@ export class EventBus {
     }
   }
 
-  public listenerCount(event: string): number {
+  public listenerCount<T = any>(event: StringToken<T>): number {
     const handlersCount = this.listeners.get(event)?.size || 0;
     const onceHandlersCount = this.onceListeners.get(event)?.size || 0;
     return handlersCount + onceHandlersCount;
   }
 
-  public eventNames(): string[] {
+  public eventNames<T = any>(): StringToken<T>[] {
     const allEvents = new Set([
       ...this.listeners.keys(),
       ...this.onceListeners.keys()
@@ -199,15 +198,15 @@ export class EventBus {
     return this.maxListeners;
   }
 
-  private isAsyncHandler(handler: EventHandler): handler is AsyncHandler {
+  private isAsyncHandler<T = any>(handler: EventHandler<T>): handler is AsyncHandler<T> {
     return handler.constructor.name === 'AsyncFunction';
   }
 
-  private handleError(error: unknown, event: string): void {
+  private handleError<T>(error: unknown, event: StringToken<T>): void {
     console.error(`EventBus error in event "${event}":`, error);
-    
+
     if (this.listenerCount('error') > 0) {
-      this.emit('error', { error, event });
+      this.emit(ERROR, { error, event });
     }
   }
 }

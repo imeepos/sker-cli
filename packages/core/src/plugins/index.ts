@@ -1,5 +1,5 @@
 import { EventBus } from '../events/index.js';
-import { Plugin, PluginConfig, PluginContext } from '../types/index.js';
+import { Plugin, PluginConfig, PluginContext, PLUGIN_REGISTERED, PLUGIN_UNREGISTERED, PLUGIN_SKIPPED, PLUGIN_INITIALIZING, PLUGIN_INITIALIZED, PLUGIN_ERROR, PLUGIN_DESTROYING, PLUGIN_DESTROYED, PLUGIN_ENABLED, PLUGIN_DISABLED, PLUGIN_CONFIG_UPDATED } from '../types/index.js';
 import { SkerError, ErrorCodes } from '../errors/index.js';
 
 interface PluginInstance {
@@ -52,7 +52,7 @@ export class PluginManager extends EventBus {
       initialized: false
     });
 
-    this.emit('pluginRegistered', { name, plugin, config });
+    this.emit(PLUGIN_REGISTERED, { name, plugin, config });
   }
 
   public unregister(name: string): void {
@@ -69,7 +69,7 @@ export class PluginManager extends EventBus {
     }
 
     this.plugins.delete(name);
-    this.emit('pluginUnregistered', { name });
+    this.emit(PLUGIN_UNREGISTERED, { name });
   }
 
   public async initialize(name: string): Promise<void> {
@@ -83,20 +83,20 @@ export class PluginManager extends EventBus {
     }
 
     if (pluginInstance.config.enabled === false) {
-      this.emit('pluginSkipped', { name, reason: 'disabled' });
+      this.emit(PLUGIN_SKIPPED, { name, reason: 'disabled' });
       return;
     }
 
     try {
-      this.emit('pluginInitializing', { name });
+      this.emit(PLUGIN_INITIALIZING, { name });
       
       pluginInstance.instance = await pluginInstance.plugin.initialize(pluginInstance.context);
       pluginInstance.initialized = true;
       this.initializationOrder.push(name);
 
-      this.emit('pluginInitialized', { name });
+      this.emit(PLUGIN_INITIALIZED, { name });
     } catch (error) {
-      this.emit('pluginError', { name, error, phase: 'initialize' });
+      this.emit(PLUGIN_ERROR, { name, error, phase: 'initialize' });
       throw new SkerError(
         ErrorCodes.PLUGIN_ERROR,
         `Failed to initialize plugin "${name}"`,
@@ -134,7 +134,7 @@ export class PluginManager extends EventBus {
     }
 
     try {
-      this.emit('pluginDestroying', { name });
+      this.emit(PLUGIN_DESTROYING, { name });
       
       if (typeof pluginInstance.plugin.destroy === 'function') {
         await pluginInstance.plugin.destroy();
@@ -148,9 +148,9 @@ export class PluginManager extends EventBus {
         this.initializationOrder.splice(index, 1);
       }
 
-      this.emit('pluginDestroyed', { name });
+      this.emit(PLUGIN_DESTROYED, { name });
     } catch (error) {
-      this.emit('pluginError', { name, error, phase: 'destroy' });
+      this.emit(PLUGIN_ERROR, { name, error, phase: 'destroy' });
       throw new SkerError(
         ErrorCodes.PLUGIN_ERROR,
         `Failed to destroy plugin "${name}"`,
@@ -241,7 +241,7 @@ export class PluginManager extends EventBus {
       await this.initialize(name);
     }
 
-    this.emit('pluginEnabled', { name });
+    this.emit(PLUGIN_ENABLED, { name });
   }
 
   public async disable(name: string): Promise<void> {
@@ -259,7 +259,7 @@ export class PluginManager extends EventBus {
     }
 
     pluginInstance.config.enabled = false;
-    this.emit('pluginDisabled', { name });
+    this.emit(PLUGIN_DISABLED, { name });
   }
 
   public updatePluginConfig(name: string, config: Record<string, any>): void {
@@ -272,6 +272,6 @@ export class PluginManager extends EventBus {
     pluginInstance.context.config = { ...pluginInstance.context.config, ...config };
     pluginInstance.config.options = { ...pluginInstance.config.options, ...config };
 
-    this.emit('pluginConfigUpdated', { name, oldConfig, newConfig: pluginInstance.context.config });
+    this.emit(PLUGIN_CONFIG_UPDATED, { name, oldConfig, newConfig: pluginInstance.context.config });
   }
 }
