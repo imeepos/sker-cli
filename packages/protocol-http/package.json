@@ -53,6 +53,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@sker/core": "workspace:*",
     "@sker/constants": "workspace:*",
     "@sker/error-core": "workspace:*",
     "@sker/logger": "workspace:*",

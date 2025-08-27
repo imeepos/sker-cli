@@ -5,7 +5,7 @@ import "reflect-metadata"
 import http from 'http';
 import https from 'https';
 import fs from 'fs/promises';
-import { EventEmitter } from 'events';
+import { SkerCore } from '@sker/core';
 import { 
   ServerConfig, 
   HTTPRequest, 
@@ -14,7 +14,8 @@ import {
   MiddlewareContext,
   RouteHandler,
   HTTPMethod,
-  ControllerMetadata
+  ControllerMetadata,
+  HTTPServerOptions
 } from '../types/http-types.js';
 import { 
   parseQuery, 
@@ -29,16 +30,113 @@ import {
 import { normalizePath } from '../utils/url-utils.js';
 import { HTTP_STATUS, DEFAULT_CONFIG } from '../constants/http-constants.js';
 
-export class HTTPServer extends EventEmitter {
+export class HTTPServer extends SkerCore {
   private config: ServerConfig;
   private server?: http.Server | https.Server;
-  private middleware: Middleware[] = [];
+  private httpMiddleware: Middleware[] = [];
   private routes = new Map<string, Map<string, RouteHandler>>();
   private controllers = new Map<string, any>();
 
-  constructor(config: Partial<ServerConfig> = {}) {
-    super();
-    this.config = this.mergeConfig(config);
+  constructor(options: HTTPServerOptions) {
+    super({
+      serviceName: options.serviceName || 'sker-http-server',
+      version: options.version || '1.0.0',
+      environment: options.environment || 'development',
+      config: options.config,
+      plugins: options.plugins,
+      lifecycle: options.lifecycle
+    });
+    
+    this.config = this.mergeConfig(options.server || {});
+    this.setupCoreIntegration();
+  }
+
+  /**
+   * 设置核心集成
+   */
+  private setupCoreIntegration(): void {
+    // 监听生命周期事件
+    this.getLifecycle().onStart(async () => {
+      await this.createServer();
+    });
+
+    this.getLifecycle().onStop(async () => {
+      await this.gracefulShutdown();
+    });
+
+    // 集成配置管理
+    this.getConfig().on('change', ({ key, newValue }) => {
+      if (key.startsWith('http.')) {
+        this.handleConfigChange(key, newValue);
+      }
+    });
+  }
+
+  /**
+   * 处理配置变更
+   */
+  private handleConfigChange(key: string, value: any): void {
+    const configKey = key.replace('http.', '');
+    
+    switch (configKey) {
+      case 'cors.enabled':
+        this.config.cors!.enabled = value;
+        break;
+      case 'rateLimit.enabled':
+        this.config.rateLimit!.enabled = value;
+        break;
+      case 'compression.enabled':
+        this.config.compression!.enabled = value;
+        break;
+      default:
+        // 其他配置变更
+        break;
+    }
+  }
+
+  /**
+   * 可选配置的启动方法
+   */
+  public async startServer(): Promise<void> {
+    if (!this.isStarted) {
+      await this.start();
+    }
+    
+    return new Promise((resolve, reject) => {
+      if (!this.server) {
+        reject(new Error('Server not created'));
+        return;
+      }
+
+      this.server.listen(this.config.port, this.config.host, () => {
+        console.log(`HTTP服务器运行在 ${this.config.https?.enabled ? 'https' : 'http'}://${this.config.host}:${this.config.port}`);
+        this.emit('listening');
+        resolve();
+      });
+
+      this.server.on('error', (error) => {
+        console.error('Server error:', error);
+        this.emit('error', error);
+        reject(error);
+      });
+    });
+  }
+
+  /**
+   * 获取服务器信息
+   */
+  public getServerInfo(): {
+    serviceName: string;
+    version: string;
+    environment: string;
+    state: any;
+    uptime: number;
+    config: ServerConfig;
+  } {
+    return {
+      ...this.getInfo(),
+      config: this.config
+    };
   }
 
   /**
@@ -124,10 +222,10 @@ export class HTTPServer extends EventEmitter {
       // 内置中间件
       const builtinMiddleware = this.getBuiltinMiddleware(middleware);
       if (builtinMiddleware) {
-        this.middleware.push(builtinMiddleware);
+        this.httpMiddleware.push(builtinMiddleware);
       }
     } else {
-      this.middleware.push(middleware);
+      this.httpMiddleware.push(middleware);
     }
     return this;
   }
@@ -398,32 +496,6 @@ export class HTTPServer extends EventEmitter {
   }
 
   /**
-   * 启动服务器
-   */
-  async start(): Promise<void> {
-    await this.createServer();
-    
-    return new Promise((resolve, reject) => {
-      if (!this.server) {
-        reject(new Error('Server not created'));
-        return;
-      }
-
-      this.server.listen(this.config.port, this.config.host, () => {
-        console.log(`HTTP服务器运行在 ${this.config.https?.enabled ? 'https' : 'http'}://${this.config.host}:${this.config.port}`);
-        this.emit('listening');
-        resolve();
-      });
-
-      this.server.on('error', (error) => {
-        console.error('Server error:', error);
-        this.emit('error', error);
-        reject(error);
-      });
-    });
-  }
-
-  /**
    * 创建服务器实例
    */
   private async createServer(): Promise<void> {
@@ -568,9 +640,15 @@ export class HTTPServer extends EventEmitter {
     let index = 0;
 
     const next = async (): Promise<void> => {
-      if (index < this.middleware.length) {
-        const middleware = this.middleware[index++]!;
-        await middleware(ctx, next);
+      if (index < this.httpMiddleware.length) {
+        const middleware = this.httpMiddleware[index++]!;
+        try {
+          await middleware(ctx, next);
+        } catch (error) {
+          // HTTP中间件错误处理
+          console.error(`HTTP Middleware error at index ${index}:`, error);
+          throw error;
+        }
       } else {
         // 执行路由处理
         await this.executeRoute(ctx);

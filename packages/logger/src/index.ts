@@ -22,12 +22,30 @@ export type {
   PerformanceMetrics,
   MonitoringDecorator,
   ErrorReportingConfig,
-  LoggerMiddlewareConfig
+  LoggerMiddlewareConfig,
+  // New Core Logger types
+  CoreLoggerOptions,
+  StructuredLogData,
+  LogProcessor,
+  TracingProcessor,
+  PerformanceProcessor,
+  SecurityProcessor,
+  EnhancedOutputConfig
 } from './types.js';
 
 export { Logger } from './logger.js';
 export { TracingLogger, createTraceContext } from './tracing.js';
 export { PerformanceLogger } from './performance.js';
+
+// New Core Logger exports
+export { CoreLogger } from './core-logger.js';
+export { 
+  PerformanceLogProcessor,
+  TracingLogProcessor,
+  SecurityLogProcessor,
+  ErrorEnhancementProcessor,
+  AggregationProcessor
+} from './processors.js';
 
 export { 
   ConsoleOutputAdapter,

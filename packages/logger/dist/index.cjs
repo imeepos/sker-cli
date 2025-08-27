@@ -30,15 +30,21 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
+  AggregationProcessor: () => AggregationProcessor,
   BatchElasticsearchOutputAdapter: () => BatchElasticsearchOutputAdapter,
   ConsoleOutputAdapter: () => ConsoleOutputAdapter,
+  CoreLogger: () => CoreLogger,
   ElasticsearchOutputAdapter: () => ElasticsearchOutputAdapter,
+  ErrorEnhancementProcessor: () => ErrorEnhancementProcessor,
   FileOutputAdapter: () => FileOutputAdapter,
   LogFormat: () => LogFormat,
   LogLevel: () => LogLevel,
   Logger: () => Logger,
   MultiOutputAdapter: () => MultiOutputAdapter,
+  PerformanceLogProcessor: () => PerformanceLogProcessor,
   PerformanceLogger: () => PerformanceLogger,
+  SecurityLogProcessor: () => SecurityLogProcessor,
+  TracingLogProcessor: () => TracingLogProcessor,
   TracingLogger: () => TracingLogger,
   createConsoleLogger: () => createConsoleLogger,
   createDevelopmentLogger: () => createDevelopmentLogger,
@@ -68,11 +74,11 @@ var LogLevel = /* @__PURE__ */ ((LogLevel2) => {
   LogLevel2[LogLevel2["FATAL"] = 5] = "FATAL";
   return LogLevel2;
 })(LogLevel || {});
-var LogFormat = /* @__PURE__ */ ((LogFormat2) => {
-  LogFormat2["JSON"] = "json";
-  LogFormat2["PRETTY"] = "pretty";
-  LogFormat2["TEXT"] = "text";
-  return LogFormat2;
+var LogFormat = /* @__PURE__ */ ((LogFormat3) => {
+  LogFormat3["JSON"] = "json";
+  LogFormat3["PRETTY"] = "pretty";
+  LogFormat3["TEXT"] = "text";
+  return LogFormat3;
 })(LogFormat || {});
 
 // src/logger.ts
@@ -1006,6 +1012,517 @@ var PerformanceLogger = class _PerformanceLogger extends TracingLogger {
   }
 };
 
+// src/core-logger.ts
+var import_core = require("@sker/core");
+var CoreLogger = class extends import_core.SkerCore {
+  logger;
+  processors = /* @__PURE__ */ new Map();
+  constructor(options) {
+    super({
+      serviceName: options.serviceName || "sker-logger",
+      version: options.version || "1.0.0",
+      environment: options.environment || "development",
+      config: options.config,
+      plugins: options.plugins,
+      lifecycle: options.lifecycle
+    });
+    const loggerConfig = {
+      name: this.serviceName,
+      service: {
+        name: this.serviceName,
+        version: this.version,
+        environment: this.environment
+      },
+      ...options.logger
+    };
+    this.logger = new Logger(loggerConfig);
+    this.setupCoreIntegration();
+  }
+  /**
+   * 设置核心集成
+   */
+  setupCoreIntegration() {
+    this.getConfig().on("change", ({ key, newValue }) => {
+      if (key.startsWith("logger.")) {
+        this.handleConfigChange(key, newValue);
+      }
+    });
+    this.getLifecycle().onStart(async () => {
+      this.logger.info("Logger service starting", {
+        service: this.serviceName,
+        version: this.version
+      });
+    });
+    this.getLifecycle().onStop(async () => {
+      this.logger.info("Logger service stopping");
+      await this.logger.close();
+    });
+    this.on("CORE_PLUGIN_ERROR", ({ error, plugin }) => {
+      this.logger.error("Plugin error occurred", {
+        plugin,
+        error: error.message
+      }, error);
+    });
+    this.on("CORE_MIDDLEWARE_ERROR", ({ error, middleware }) => {
+      this.logger.error("Middleware error occurred", {
+        middleware,
+        error: error.message
+      }, error);
+    });
+  }
+  /**
+   * 处理配置变更
+   */
+  handleConfigChange(key, value) {
+    const configKey = key.replace("logger.", "");
+    switch (configKey) {
+      case "level":
+        this.logger.setLevel(value);
+        this.logger.info("Log level changed", { newLevel: value });
+        break;
+      default:
+        this.logger.debug("Logger configuration updated", { key, value });
+        break;
+    }
+  }
+  /**
+   * 注册日志处理器
+   */
+  registerProcessor(name, processor) {
+    this.processors.set(name, processor);
+    this.logger.info("Log processor registered", { processor: name });
+  }
+  /**
+   * 移除日志处理器
+   */
+  unregisterProcessor(name) {
+    const removed = this.processors.delete(name);
+    if (removed) {
+      this.logger.info("Log processor unregistered", { processor: name });
+    }
+    return removed;
+  }
+  /**
+   * 获取所有处理器
+   */
+  getProcessors() {
+    return Array.from(this.processors.keys());
+  }
+  /**
+   * 增强的日志方法，支持结构化数据和处理器
+   */
+  async logStructured(level, message, data, context) {
+    let processedData = data;
+    for (const [name, processor] of this.processors) {
+      try {
+        processedData = await processor.process(level, message, processedData, context);
+      } catch (error) {
+        this.logger.warn("Log processor failed", {
+          processor: name,
+          error: error.message
+        });
+      }
+    }
+    const enrichedContext = {
+      ...context,
+      serviceName: this.serviceName,
+      version: this.version,
+      environment: this.environment,
+      uptime: this.uptime,
+      ...processedData
+    };
+    switch (level) {
+      case 0 /* TRACE */:
+        this.logger.trace(message, enrichedContext);
+        break;
+      case 1 /* DEBUG */:
+        this.logger.debug(message, enrichedContext);
+        break;
+      case 2 /* INFO */:
+        this.logger.info(message, enrichedContext);
+        break;
+      case 3 /* WARN */:
+        this.logger.warn(message, enrichedContext);
+        break;
+      case 4 /* ERROR */:
+        this.logger.error(message, enrichedContext);
+        break;
+      case 5 /* FATAL */:
+        this.logger.fatal(message, enrichedContext);
+        break;
+    }
+  }
+  /**
+   * 创建子日志记录器，继承当前配置
+   */
+  createChildLogger(context) {
+    return this.logger.child({
+      ...context,
+      parentService: this.serviceName,
+      parentVersion: this.version
+    });
+  }
+  /**
+   * 获取内部Logger实例
+   */
+  getLogger() {
+    return this.logger;
+  }
+  /**
+   * 便捷方法
+   */
+  trace(message, data, context) {
+    return this.logStructured(0 /* TRACE */, message, data, context);
+  }
+  debug(message, data, context) {
+    return this.logStructured(1 /* DEBUG */, message, data, context);
+  }
+  info(message, data, context) {
+    return this.logStructured(2 /* INFO */, message, data, context);
+  }
+  warn(message, data, context) {
+    return this.logStructured(3 /* WARN */, message, data, context);
+  }
+  error(message, data, context, error) {
+    const errorData = error ? {
+      ...data,
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      }
+    } : data;
+    return this.logStructured(4 /* ERROR */, message, errorData, context);
+  }
+  fatal(message, data, context, error) {
+    const errorData = error ? {
+      ...data,
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      }
+    } : data;
+    return this.logStructured(5 /* FATAL */, message, errorData, context);
+  }
+  /**
+   * 链路追踪集成
+   */
+  startTrace(operation, context) {
+    const traceId = this.generateTraceId();
+    const startTime = Date.now();
+    this.info("Trace started", {
+      traceId,
+      operation,
+      startTime,
+      ...context
+    });
+    return traceId;
+  }
+  endTrace(traceId, result, context) {
+    const endTime = Date.now();
+    this.info("Trace ended", {
+      traceId,
+      result: result || "success",
+      endTime,
+      ...context
+    });
+  }
+  /**
+   * 性能监控
+   */
+  async measurePerformance(operation, fn, context) {
+    const startTime = process.hrtime.bigint();
+    const traceId = this.startTrace(operation, context);
+    try {
+      const result = await fn();
+      const endTime = process.hrtime.bigint();
+      const duration = Number(endTime - startTime) / 1e6;
+      this.info("Performance measurement", {
+        traceId,
+        operation,
+        duration,
+        status: "success",
+        ...context
+      });
+      this.endTrace(traceId, "success");
+      return result;
+    } catch (error) {
+      const endTime = process.hrtime.bigint();
+      const duration = Number(endTime - startTime) / 1e6;
+      this.error("Performance measurement failed", {
+        traceId,
+        operation,
+        duration,
+        status: "error",
+        ...context
+      }, error);
+      this.endTrace(traceId, "error");
+      throw error;
+    }
+  }
+  generateTraceId() {
+    return `trace-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+};
+
+// src/processors.ts
+var PerformanceLogProcessor = class {
+  name = "performance";
+  measurements = /* @__PURE__ */ new Map();
+  async process(level, message, data, context) {
+    const enhancedData = { ...data };
+    const memoryUsage = process.memoryUsage();
+    const cpuUsage = process.cpuUsage();
+    enhancedData.performance = {
+      ...enhancedData.performance,
+      memory: memoryUsage.heapUsed,
+      cpu: cpuUsage.user + cpuUsage.system
+    };
+    if (!enhancedData.metadata) {
+      enhancedData.metadata = {};
+    }
+    enhancedData.metadata.performance = {
+      memoryTotal: memoryUsage.heapTotal,
+      memoryExternal: memoryUsage.external,
+      cpuUser: cpuUsage.user,
+      cpuSystem: cpuUsage.system,
+      uptime: process.uptime(),
+      timestamp: Date.now()
+    };
+    return enhancedData;
+  }
+  startMeasurement(operation) {
+    const measurementId = `${operation}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    this.measurements.set(measurementId, {
+      startTime: process.hrtime.bigint(),
+      startMemory: process.memoryUsage().heapUsed
+    });
+    return measurementId;
+  }
+  endMeasurement(measurementId) {
+    const measurement = this.measurements.get(measurementId);
+    if (!measurement) {
+      return { duration: 0, memory: 0 };
+    }
+    const endTime = process.hrtime.bigint();
+    const endMemory = process.memoryUsage().heapUsed;
+    const duration = Number(endTime - measurement.startTime) / 1e6;
+    const memoryDelta = endMemory - measurement.startMemory;
+    this.measurements.delete(measurementId);
+    return { duration, memory: memoryDelta };
+  }
+};
+var TracingLogProcessor = class {
+  name = "tracing";
+  spans = /* @__PURE__ */ new Map();
+  async process(level, message, data, context) {
+    const enhancedData = { ...data };
+    if (context?.trace_id || context?.span_id) {
+      enhancedData.tracing = {
+        ...enhancedData.tracing,
+        traceId: context.trace_id,
+        spanId: context.span_id,
+        parentSpanId: context.parent_span_id
+      };
+    }
+    if (!enhancedData.tracing?.traceId) {
+      enhancedData.tracing = {
+        ...enhancedData.tracing,
+        traceId: this.generateTraceId()
+      };
+    }
+    return enhancedData;
+  }
+  startSpan(operation, context) {
+    const spanId = this.generateSpanId();
+    this.spans.set(spanId, {
+      startTime: Date.now(),
+      operation,
+      context
+    });
+    return spanId;
+  }
+  endSpan(spanId, result) {
+    const span = this.spans.get(spanId);
+    if (!span) return;
+    const duration = Date.now() - span.startTime;
+    this.spans.delete(spanId);
+    console.log(`Span ended: ${span.operation}, duration: ${duration}ms, result: ${result || "success"}`);
+  }
+  generateTraceId() {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 16)}`;
+  }
+  generateSpanId() {
+    return Math.random().toString(36).substr(2, 16);
+  }
+};
+var SecurityLogProcessor = class {
+  name = "security";
+  sensitiveFields = /* @__PURE__ */ new Set([
+    "password",
+    "token",
+    "secret",
+    "key",
+    "authorization",
+    "credit_card",
+    "ssn",
+    "email",
+    "phone",
+    "address",
+    "api_key",
+    "access_token",
+    "refresh_token"
+  ]);
+  async process(level, message, data, context) {
+    if (!data) return data;
+    return this.sanitizeData(data);
+  }
+  sanitizeData(data) {
+    const sanitized = { ...data };
+    for (const [key, value] of Object.entries(sanitized)) {
+      if (this.isSensitiveField(key)) {
+        sanitized[key] = this.maskValue(value);
+      } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+        sanitized[key] = this.sanitizeData(value);
+      } else if (Array.isArray(value)) {
+        sanitized[key] = value.map(
+          (item) => typeof item === "object" && item !== null ? this.sanitizeData(item) : item
+        );
+      }
+    }
+    return sanitized;
+  }
+  checkSensitiveFields(data) {
+    for (const key of Object.keys(data)) {
+      if (this.isSensitiveField(key)) {
+        return true;
+      }
+      const value = data[key];
+      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+        if (this.checkSensitiveFields(value)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  isSensitiveField(fieldName) {
+    const lowerFieldName = fieldName.toLowerCase();
+    return Array.from(this.sensitiveFields).some(
+      (sensitive) => lowerFieldName.includes(sensitive)
+    );
+  }
+  maskValue(value) {
+    if (typeof value === "string") {
+      if (value.length <= 4) return "*".repeat(value.length);
+      return value.substring(0, 2) + "*".repeat(value.length - 4) + value.substring(value.length - 2);
+    }
+    return "[REDACTED]";
+  }
+  addSensitiveField(field) {
+    this.sensitiveFields.add(field.toLowerCase());
+  }
+  removeSensitiveField(field) {
+    this.sensitiveFields.delete(field.toLowerCase());
+  }
+};
+var ErrorEnhancementProcessor = class {
+  name = "error-enhancement";
+  async process(level, message, data, context) {
+    if (level !== 4 /* ERROR */ && level !== 5 /* FATAL */) {
+      return data;
+    }
+    const enhancedData = { ...data };
+    if (enhancedData.error) {
+      enhancedData.error = {
+        ...enhancedData.error
+      };
+      if (!enhancedData.metadata) {
+        enhancedData.metadata = {};
+      }
+      enhancedData.metadata.errorEnhancement = {
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        severity: level === 5 /* FATAL */ ? "critical" : "error",
+        fingerprint: this.generateErrorFingerprint(enhancedData.error),
+        context: {
+          ...context,
+          process: {
+            pid: process.pid,
+            title: process.title,
+            version: process.version,
+            platform: process.platform,
+            arch: process.arch
+          }
+        }
+      };
+    }
+    return enhancedData;
+  }
+  generateErrorFingerprint(error) {
+    const input = `${error.name || "Error"}-${error.message || "Unknown"}`;
+    let hash = 0;
+    for (let i = 0; i < input.length; i++) {
+      const char = input.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36);
+  }
+};
+var AggregationProcessor = class {
+  name = "aggregation";
+  stats = {
+    totalLogs: 0,
+    levelCounts: /* @__PURE__ */ new Map(),
+    errorFingerprints: /* @__PURE__ */ new Map(),
+    lastReset: Date.now()
+  };
+  async process(level, message, data, context) {
+    this.updateStats(level, data);
+    const enhancedData = { ...data };
+    enhancedData.statistics = {
+      totalLogs: this.stats.totalLogs,
+      logsSinceReset: this.stats.totalLogs,
+      resetTime: new Date(this.stats.lastReset).toISOString()
+    };
+    return enhancedData;
+  }
+  updateStats(level, data) {
+    this.stats.totalLogs++;
+    const currentCount = this.stats.levelCounts.get(level) || 0;
+    this.stats.levelCounts.set(level, currentCount + 1);
+    if ((level === 4 /* ERROR */ || level === 5 /* FATAL */) && data?.error) {
+      const fingerprint = this.generateErrorFingerprint(data.error);
+      const errorCount = this.stats.errorFingerprints.get(fingerprint) || 0;
+      this.stats.errorFingerprints.set(fingerprint, errorCount + 1);
+    }
+  }
+  getStatistics() {
+    return {
+      ...this.stats,
+      levelCounts: Object.fromEntries(this.stats.levelCounts),
+      errorFingerprints: Object.fromEntries(this.stats.errorFingerprints)
+    };
+  }
+  resetStatistics() {
+    this.stats.totalLogs = 0;
+    this.stats.levelCounts.clear();
+    this.stats.errorFingerprints.clear();
+    this.stats.lastReset = Date.now();
+  }
+  generateErrorFingerprint(error) {
+    const input = `${error.name || "Error"}-${error.message || "Unknown"}`;
+    let hash = 0;
+    for (let i = 0; i < input.length; i++) {
+      const char = input.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36);
+  }
+};
+
 // src/factory.ts
 function createLogger(config = {}) {
   const mergedConfig = mergeWithDefaults(config);
@@ -1599,15 +2116,21 @@ function generateTraceId() {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  AggregationProcessor,
   BatchElasticsearchOutputAdapter,
   ConsoleOutputAdapter,
+  CoreLogger,
   ElasticsearchOutputAdapter,
+  ErrorEnhancementProcessor,
   FileOutputAdapter,
   LogFormat,
   LogLevel,
   Logger,
   MultiOutputAdapter,
+  PerformanceLogProcessor,
   PerformanceLogger,
+  SecurityLogProcessor,
+  TracingLogProcessor,
   TracingLogger,
   createConsoleLogger,
   createDevelopmentLogger,

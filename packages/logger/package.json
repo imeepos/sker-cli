@@ -46,6 +46,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@sker/core": "workspace:*",
     "@sker/types": "workspace:*",
     "@sker/constants": "workspace:*"
   },

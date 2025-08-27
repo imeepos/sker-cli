@@ -4,6 +4,18 @@
 
 import { IncomingMessage, ServerResponse } from 'http';
 import { Socket } from 'net';
+import type { CoreOptions } from '@sker/core';
+
+// HTTP Server Options interface for SkerCore integration
+export interface HTTPServerOptions {
+  serviceName?: string;
+  version?: string;
+  environment?: string;
+  config?: Record<string, any>;
+  plugins?: any[];
+  lifecycle?: any;
+  server?: Partial<ServerConfig>;
+}
 
 // HTTP方法类型
 export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS' | 'TRACE';

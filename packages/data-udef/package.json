@@ -53,6 +53,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@sker/core": "workspace:*",
     "@sker/types": "workspace:*",
     "@sker/constants": "workspace:*",
     "@sker/utils": "workspace:*",

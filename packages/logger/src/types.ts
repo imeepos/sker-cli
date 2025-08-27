@@ -186,3 +186,114 @@ export interface LoggerMiddlewareConfig {
   logCalls?: boolean;
   logResults?: boolean;
 }
+
+// Core Logger Types for @sker/core integration
+
+export interface CoreLoggerOptions {
+  serviceName?: string;
+  version?: string;
+  environment?: string;
+  config?: Record<string, any>;
+  plugins?: any[];
+  lifecycle?: any;
+  logger?: LoggerConfig;
+}
+
+export interface StructuredLogData {
+  [key: string]: any;
+  error?: {
+    name: string;
+    message: string;
+    stack?: string;
+    code?: string | number;
+  };
+  performance?: {
+    duration?: number;
+    memory?: number;
+    cpu?: number;
+  };
+  tracing?: {
+    traceId?: string;
+    spanId?: string;
+    parentSpanId?: string;
+  };
+}
+
+export interface LogProcessor {
+  name: string;
+  process(
+    level: LogLevel,
+    message: string,
+    data?: StructuredLogData,
+    context?: LogContext
+  ): Promise<StructuredLogData | undefined>;
+}
+
+export interface TracingProcessor extends LogProcessor {
+  startSpan(operation: string, context?: LogContext): string;
+  endSpan(spanId: string, result?: 'success' | 'error'): void;
+}
+
+export interface PerformanceProcessor extends LogProcessor {
+  startMeasurement(operation: string): string;
+  endMeasurement(measurementId: string): { duration: number; memory: number };
+}
+
+export interface SecurityProcessor extends LogProcessor {
+  sanitizeData(data: StructuredLogData): StructuredLogData;
+  checkSensitiveFields(data: StructuredLogData): boolean;
+}
+
+// Enhanced output adapters for structured logging
+
+export interface ElasticsearchOutputConfig {
+  type: 'elasticsearch';
+  enabled: boolean;
+  config: {
+    host: string;
+    port?: number;
+    index: string;
+    indexPattern?: string;
+    username?: string;
+    password?: string;
+    apiKey?: string;
+    ssl?: boolean;
+    maxRetries?: number;
+    requestTimeout?: number;
+    batchSize?: number;
+    flushInterval?: number;
+  };
+}
+
+export interface FileOutputConfig {
+  type: 'file';
+  enabled: boolean;
+  config: {
+    filename: string;
+    maxSize: string;
+    maxFiles: number;
+    compress?: boolean;
+    datePattern?: string;
+    createSymlink?: boolean;
+    symlinkName?: string;
+  };
+}
+
+export interface SyslogOutputConfig {
+  type: 'syslog';
+  enabled: boolean;
+  config: {
+    host: string;
+    port: number;
+    protocol: 'tcp' | 'udp';
+    facility?: number;
+    appName?: string;
+    hostname?: string;
+  };
+}
+
+export type EnhancedOutputConfig = 
+  | OutputConfig
+  | ElasticsearchOutputConfig 
+  | FileOutputConfig 
+  | SyslogOutputConfig;

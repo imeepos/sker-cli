@@ -1,127 +1,216 @@
 /**
- * @sker/data-udef - 统一数据交换格式(UDEF)实现
- * 
- * 提供跨语言数据序列化和标准消息格式
+ * UDEF (Unified Data Exchange Format) 主入口文件
+ * UDEF main entry point
  */
 
-// 基础类型定义
-export interface UDEFEnvelope {
-  header: {
-    messageId: string;
-    timestamp: number;
-    version: string;
-    source: string;
-    target?: string;
-  };
-  metadata?: Record<string, unknown>;
-}
+// 核心消息类和工厂
+export * from './core/message.js';
+export * from './core/envelope.js';
+export * from './core/payload.js';
 
-export interface UDEFPayload<T = unknown> {
-  data: T;
-  schema?: {
-    type: string;
-    version: string;
-  };
-}
+// 序列化器
+export * from './serializers/index.js';
 
-export interface UDEFMessage<T = unknown> {
-  envelope: UDEFEnvelope;
-  payload: UDEFPayload<T>;
-}
+// 验证和Schema注册
+export * from './validation/index.js';
 
-// 基础实现类
-export class UDEFMessageBuilder<T = unknown> {
-  private envelope: Partial<UDEFEnvelope> = {};
-  private payload: Partial<UDEFPayload<T>> = {};
+// 跨语言转换
+export * from './transformation/index.js';
 
-  constructor(messageId?: string) {
-    this.envelope = {
-      header: {
-        messageId: messageId || this.generateMessageId(),
-        timestamp: Date.now(),
-        version: '1.0.0',
-        source: 'unknown'
-      }
-    };
+// 版本管理
+export * from './versioning/index.js';
+
+// 中间件和处理管道
+export * from './middleware/index.js';
+
+// 性能优化
+export * from './performance/index.js';
+
+// 实用工具
+export * from './utils/index.js';
+
+// 便捷导出 - 主要类
+export {
+  // 核心类
+  UDEFMessage,
+  MessageFactory
+} from './core/message.js';
+
+export {
+  UDEFEnvelope,
+  EnvelopeBuilder
+} from './core/envelope.js';
+
+export {
+  UDEFPayload,
+  PayloadBuilder
+} from './core/payload.js';
+
+export {
+  // 序列化器
+  JSONSerializer,
+  CompactJSONSerializer,
+  PrettyJSONSerializer,
+  MessagePackSerializer,
+  ProtobufSerializer,
+  SerializerFactory
+} from './serializers/index.js';
+
+export {
+  // 验证器
+  SchemaRegistry,
+  MessageValidator,
+  UDEFMessageValidator,
+  JSONSchemaValidator
+} from './validation/index.js';
+
+export {
+  // 转换器
+  TypeMapper,
+  DataTransformer,
+  CrossLanguageTypeMapper,
+  CrossLanguageTransformer
+} from './transformation/index.js';
+
+export {
+  // 版本管理
+  VersionTransformer,
+  VersionComparator
+} from './versioning/index.js';
+
+export {
+  // 中间件
+  MessageProcessor,
+  BuiltinMiddleware,
+  MiddlewareComposer
+} from './middleware/index.js';
+
+export {
+  // 性能优化
+  ObjectPool,
+  UDEFMessagePool,
+  SerializationCache,
+  BatchProcessor
+} from './performance/index.js';
+
+export {
+  // 工具类
+  DeepClone,
+  MessageComparator,
+  PathUtils,
+  Formatter,
+  ValidationUtils,
+  PerformanceMonitor,
+  DebugUtils
+} from './utils/index.js';
+
+// 常用接口和类型导出
+export type {
+  // 消息类型
+  UDEFMessage as UDEFMessageType,
+  TypedUDEFMessage,
+  RequestMessage,
+  ResponseMessage,
+  EventMessage,
+  CommandMessage,
+  NotificationMessage,
+  HeartbeatMessage,
+  MessageHeader,
+  MessageMetadata,
+  MessagePayload,
+  MessageEnvelope,
+  ServiceInfo,
+  ContentType,
+  MessageType,
+  MessagePriority
+} from '@sker/types';
+
+export type {
+  // 序列化相关
+  SerializationOptions,
+  SerializationResult,
+  DeserializationOptions,
+  SerializerType
+} from './serializers/index.js';
+
+export type {
+  // 验证相关
+  ValidationResult,
+  ValidationError,
+  ValidationWarning,
+  ValidationOptions,
+  Schema,
+  SchemaVersion,
+  MigrationRule as SchemaMigrationRule,
+  FieldMigrationRule as SchemaFieldMigrationRule,
+  SchemaRegistryConfig
+} from './validation/index.js';
+
+export type {
+  // 转换相关
+  SupportedLanguage,
+  TypeMapping,
+  LanguageMapping,
+  NamingConvention,
+  TransformationContext,
+  CodeGenerationOptions,
+  TransformationResult
+} from './transformation/index.js';
+
+export type {
+  // 版本管理相关
+  MigrationRule,
+  FieldMigrationRule,
+  MigrationContext,
+  MigrationResult,
+  VersionCompatibility
+} from './versioning/index.js';
+
+export type {
+  // 中间件相关
+  MiddlewareContext,
+  MiddlewareFunction,
+  NextFunction,
+  ProcessingResult,
+  MiddlewareResult,
+  ProcessingOptions
+} from './middleware/index.js';
+
+export type {
+  // 性能优化相关
+  PoolOptions,
+  PoolStats,
+  CacheEntry,
+  CacheOptions,
+  CacheStats,
+  BatchOptions
+} from './performance/index.js';
+
+export type {
+  // 工具相关
+  MessageDiff
+} from './utils/index.js';
+
+// 版本信息
+export const VERSION = '1.0.0';
+
+// 默认配置
+export const DEFAULT_CONFIG = {
+  serialization: {
+    defaultFormat: 'json' as const,
+    compression: 'gzip' as const,
+    validate: true,
+    pretty: false
+  },
+  validation: {
+    strict: true,
+    allowAdditionalProperties: false,
+    skipMissingSchema: false
+  },
+  performance: {
+    enableCaching: true,
+    enablePooling: true,
+    cacheSize: 10 * 1024 * 1024, // 10MB
+    poolSize: 100
   }
-
-  setSource(source: string): this {
-    this.envelope.header!.source = source;
-    return this;
-  }
-
-  setTarget(target: string): this {
-    this.envelope.header!.target = target;
-    return this;
-  }
-
-  setData(data: T): this {
-    this.payload.data = data;
-    return this;
-  }
-
-  setSchema(type: string, version: string): this {
-    this.payload.schema = { type, version };
-    return this;
-  }
-
-  setMetadata(metadata: Record<string, unknown>): this {
-    this.envelope.metadata = metadata;
-    return this;
-  }
-
-  build(): UDEFMessage<T> {
-    if (!this.payload.data) {
-      throw new Error('Data is required for UDEF message');
-    }
-
-    return {
-      envelope: this.envelope as UDEFEnvelope,
-      payload: this.payload as UDEFPayload<T>
-    };
-  }
-
-  private generateMessageId(): string {
-    return `udef-${Date.now()}-${Math.random().toString(36).substring(2)}`;
-  }
-}
-
-// 工具函数
-export function createUDEFMessage<T>(
-  data: T,
-  options?: {
-    messageId?: string;
-    source?: string;
-    target?: string;
-    schema?: { type: string; version: string };
-    metadata?: Record<string, unknown>;
-  }
-): UDEFMessage<T> {
-  const builder = new UDEFMessageBuilder<T>(options?.messageId);
-  
-  if (options?.source) builder.setSource(options.source);
-  if (options?.target) builder.setTarget(options.target);
-  if (options?.schema) builder.setSchema(options.schema.type, options.schema.version);
-  if (options?.metadata) builder.setMetadata(options.metadata);
-  
-  return builder.setData(data).build();
-}
-
-export function isValidUDEFMessage(obj: unknown): obj is UDEFMessage {
-  if (!obj || typeof obj !== 'object') return false;
-  
-  const message = obj as any;
-  return (
-    message.envelope &&
-    message.envelope.header &&
-    typeof message.envelope.header.messageId === 'string' &&
-    typeof message.envelope.header.timestamp === 'number' &&
-    typeof message.envelope.header.version === 'string' &&
-    typeof message.envelope.header.source === 'string' &&
-    message.payload &&
-    message.payload.data !== undefined
-  );
-}
-
-// 默认导出已在上面定义
-export default UDEFMessageBuilder;
+} as const;
