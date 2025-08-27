@@ -1,0 +1,61 @@
+{
+  "name": "@sker/error-core",
+  "version": "1.0.0",
+  "description": "Sker错误处理核心包，提供统一错误处理机制和标准错误码体系",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "sker",
+    "error",
+    "exception",
+    "error-handling",
+    "error-codes"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sker-ai/sker-cli.git",
+    "directory": "packages/error-core"
+  },
+  "author": "Sker Team",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@sker/constants": "workspace:*",
+    "@sker/types": "workspace:*",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "rimraf": "^5.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.2",
+    "vitest": "^1.0.0"
+  }
+}

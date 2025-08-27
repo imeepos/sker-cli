@@ -1,0 +1,51 @@
+{
+  // Sker CLI Workspace TypeScript Configuration
+  "compilerOptions": {
+    // Module and Target Settings
+    "module": "NodeNext",
+    "target": "ESNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ESNext"],
+    "types": ["node"],
+    
+    // Output Settings
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    
+    // Workspace Configuration
+    "composite": true,
+    "incremental": false,
+    
+    // Import/Export Settings
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    
+    // Strict Type Checking
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedSideEffectImports": true,
+    
+    // Code Quality
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    
+    // Performance
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // JSX Settings
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "packages/**/*.ts"
+  ]
+}
