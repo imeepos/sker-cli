@@ -113,7 +113,7 @@ export class GRPCServer extends SkerCore {
     const middlewareArray = Array.isArray(middlewares) ? middlewares : [middlewares];
     
     middlewareArray.forEach((middleware, index) => {
-      middlewareManager.use(`${name}-${index}`, middleware);
+      middlewareManager.use(middleware, { name: `${name}-${index}` });
     });
   }
 

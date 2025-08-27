@@ -4,36 +4,124 @@
  * 提供跨语言数据序列化和标准消息格式
  */
 
-// 核心格式接口
-export * from './interfaces/message-format';
-export * from './interfaces/schema';
-export * from './interfaces/serializer';
+// 基础类型定义
+export interface UDEFEnvelope {
+  header: {
+    messageId: string;
+    timestamp: number;
+    version: string;
+    source: string;
+    target?: string;
+  };
+  metadata?: Record<string, unknown>;
+}
 
-// UDEF实现
-export * from './core/udef-message';
-export * from './core/schema-registry';
-export * from './core/type-mapper';
+export interface UDEFPayload<T = unknown> {
+  data: T;
+  schema?: {
+    type: string;
+    version: string;
+  };
+}
 
-// 序列化器
-export * from './serializers/json-serializer';
-export * from './serializers/protobuf-serializer';
-export * from './serializers/msgpack-serializer';
+export interface UDEFMessage<T = unknown> {
+  envelope: UDEFEnvelope;
+  payload: UDEFPayload<T>;
+}
 
-// 验证器
-export * from './validators/schema-validator';
-export * from './validators/type-validator';
+// 基础实现类
+export class UDEFMessageBuilder<T = unknown> {
+  private envelope: Partial<UDEFEnvelope> = {};
+  private payload: Partial<UDEFPayload<T>> = {};
 
-// 转换器
-export * from './transformers/cross-language-transformer';
-export * from './transformers/version-transformer';
+  constructor(messageId?: string) {
+    this.envelope = {
+      header: {
+        messageId: messageId || this.generateMessageId(),
+        timestamp: Date.now(),
+        version: '1.0.0',
+        source: 'unknown'
+      }
+    };
+  }
+
+  setSource(source: string): this {
+    this.envelope.header!.source = source;
+    return this;
+  }
+
+  setTarget(target: string): this {
+    this.envelope.header!.target = target;
+    return this;
+  }
+
+  setData(data: T): this {
+    this.payload.data = data;
+    return this;
+  }
+
+  setSchema(type: string, version: string): this {
+    this.payload.schema = { type, version };
+    return this;
+  }
+
+  setMetadata(metadata: Record<string, unknown>): this {
+    this.envelope.metadata = metadata;
+    return this;
+  }
+
+  build(): UDEFMessage<T> {
+    if (!this.payload.data) {
+      throw new Error('Data is required for UDEF message');
+    }
+
+    return {
+      envelope: this.envelope as UDEFEnvelope,
+      payload: this.payload as UDEFPayload<T>
+    };
+  }
+
+  private generateMessageId(): string {
+    return `udef-${Date.now()}-${Math.random().toString(36).substring(2)}`;
+  }
+}
 
 // 工具函数
-export * from './utils/format-utils';
-export * from './utils/compression';
+export function createUDEFMessage<T>(
+  data: T,
+  options?: {
+    messageId?: string;
+    source?: string;
+    target?: string;
+    schema?: { type: string; version: string };
+    metadata?: Record<string, unknown>;
+  }
+): UDEFMessage<T> {
+  const builder = new UDEFMessageBuilder<T>(options?.messageId);
+  
+  if (options?.source) builder.setSource(options.source);
+  if (options?.target) builder.setTarget(options.target);
+  if (options?.schema) builder.setSchema(options.schema.type, options.schema.version);
+  if (options?.metadata) builder.setMetadata(options.metadata);
+  
+  return builder.setData(data).build();
+}
 
-// 常量和类型
-export * from './constants/format-types';
-export * from './types/udef-types';
+export function isValidUDEFMessage(obj: unknown): obj is UDEFMessage {
+  if (!obj || typeof obj !== 'object') return false;
+  
+  const message = obj as any;
+  return (
+    message.envelope &&
+    message.envelope.header &&
+    typeof message.envelope.header.messageId === 'string' &&
+    typeof message.envelope.header.timestamp === 'number' &&
+    typeof message.envelope.header.version === 'string' &&
+    typeof message.envelope.header.source === 'string' &&
+    message.payload &&
+    message.payload.data !== undefined
+  );
+}
 
-// 默认导出
-export { UDEFMessage } from './core/udef-message';
+// 默认导出已在上面定义
+export default UDEFMessageBuilder;
