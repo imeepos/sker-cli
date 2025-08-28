@@ -3,7 +3,7 @@
  */
 
 import { EventEmitter as NodeEventEmitter } from 'events';
-import { Logger } from '@sker/logger';
+import { Logger } from '@sker/core';
 import { WebSocketConnection, EventFilter, EventRoute } from '../types/websocket-types.js';
 
 export class WebSocketEventEmitter extends NodeEventEmitter {

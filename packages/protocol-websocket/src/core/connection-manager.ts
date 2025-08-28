@@ -3,15 +3,14 @@
  */
 
 import { EventEmitter } from 'events';
-import { generateUUID } from '@sker/utils';
-import { Logger } from '@sker/logger';
-import { 
-  WebSocketConnection, 
-  ConnectionInfo, 
-  User, 
-  WebSocketState, 
+import { generateUUID, Logger } from '@sker/core';
+import {
+  WebSocketConnection,
+  ConnectionInfo,
+  User,
+  WebSocketState,
   ConnectionMetrics,
-  ConnectionConfig 
+  ConnectionConfig
 } from '../types/websocket-types.js';
 import { WebSocketEvent, WebSocketCloseCode } from '../constants/websocket-constants.js';
 

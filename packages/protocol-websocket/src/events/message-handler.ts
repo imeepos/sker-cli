@@ -2,12 +2,12 @@
  * @sker/protocol-websocket - 消息处理器
  */
 
-import { Logger } from '@sker/logger';
-import { 
-  MessageHandler, 
-  WebSocketConnection, 
+import { Logger } from '@sker/core';
+import {
+  MessageHandler,
+  WebSocketConnection,
   Message,
-  MessageEnvelope 
+  MessageEnvelope
 } from '../types/websocket-types.js';
 import { MessageTypes, WebSocketEvent, ERROR_MESSAGES } from '../constants/websocket-constants.js';
 import { MessageValidator, MessageRouter, MessageFactory } from '../utils/message-utils.js';

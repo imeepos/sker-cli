@@ -3,7 +3,7 @@
  * Base serializer abstract class
  */
 
-import type { UDEFMessage } from '@sker/core';
+import type { UDEFMessage } from '@sker/types';
 import type { UDEFMessageImpl } from '../core/message.js';
 
 export interface SerializationOptions {

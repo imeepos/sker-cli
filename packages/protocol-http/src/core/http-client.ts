@@ -16,13 +16,16 @@ import {
   HTTPQuery,
   ProgressEvent
 } from '../types/http-types.js';
-import { 
-  addQueryToURL, 
-  resolveURL, 
+import {
+  addQueryToURL,
+  resolveURL,
   isAbsoluteURL,
-  validateURL 
+  validateURL
 } from '../utils/url-utils.js';
 import { DEFAULT_CONFIG, HTTP_STATUS } from '../constants/http-constants.js';
+
+// 定义协议类型以实现接口对齐
+type ProtocolType = 'http' | 'grpc' | 'websocket' | 'ucp';
 
 export class HTTPClient extends EventEmitter {
   private config: ClientConfig;
@@ -568,5 +571,168 @@ export class HTTPClient extends EventEmitter {
    */
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // ========================================
+  // ProtocolClient接口实现 - 接口对齐
+  // ========================================
+
+  /**
+   * 协议类型 - ProtocolClient接口要求
+   */
+  get protocol(): ProtocolType {
+    return 'http' as ProtocolType;
+  }
+
+  /**
+   * 目标地址 - ProtocolClient接口要求
+   */
+  get target(): string {
+    return this.config.baseURL || '';
+  }
+
+  /**
+   * 统一的RPC调用方法 - ProtocolClient接口实现
+   * 将HTTP请求映射为RPC调用
+   *
+   * @param service 服务名称（映射为URL路径的一部分）
+   * @param method 方法名称（映射为HTTP方法或URL路径）
+   * @param data 请求数据
+   * @param options 调用选项
+   */
+  async call(service: string, method: string, data: any, options?: any): Promise<any> {
+    // 构建URL路径：/{service}/{method}
+    const url = `/${service}/${method}`;
+
+    // 从options中提取HTTP相关配置
+    const httpConfig: RequestConfig = {
+      method: this.mapMethodToHTTP(method),
+      headers: options?.headers || {},
+      timeout: options?.timeout,
+      ...options
+    };
+
+    // 根据HTTP方法决定如何传递数据
+    if (httpConfig.method === 'GET' || httpConfig.method === 'DELETE') {
+      // GET和DELETE请求将数据作为查询参数
+      httpConfig.params = data;
+    } else {
+      // POST、PUT、PATCH请求将数据作为请求体
+      httpConfig.data = data;
+    }
+
+    try {
+      const response = await this.request(url, httpConfig);
+      return response.data;
+    } catch (error) {
+      // 转换HTTP错误为统一的协议错误
+      throw this.convertToProtocolError(error);
+    }
+  }
+
+  /**
+   * 流式调用方法 - ProtocolClient接口实现
+   * HTTP协议的流式实现（使用Server-Sent Events或分块传输）
+   *
+   * @param service 服务名称
+   * @param method 方法名称
+   * @param data 请求数据
+   * @param options 流选项
+   */
+  async *stream(service: string, method: string, data: any, options?: any): AsyncIterableIterator<any> {
+    const url = `/${service}/${method}`;
+
+    // 设置流式请求的特殊头部
+    const streamConfig: RequestConfig = {
+      method: 'POST',
+      data,
+      headers: {
+        'Accept': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        ...options?.headers
+      },
+      timeout: options?.timeout || 0, // 流请求通常不设置超时
+      responseType: 'stream',
+      ...options
+    };
+
+    try {
+      // 注意：这里需要实现实际的流处理逻辑
+      // 当前是一个简化的实现，实际应该处理Server-Sent Events
+      const response = await this.request(url, streamConfig);
+
+      // 模拟流式数据返回
+      if (response.data) {
+        // 如果响应是数组，逐个yield
+        if (Array.isArray(response.data)) {
+          for (const item of response.data) {
+            yield item;
+          }
+        } else {
+          // 单个响应
+          yield response.data;
+        }
+      }
+    } catch (error) {
+      throw this.convertToProtocolError(error);
+    }
+  }
+
+  /**
+   * 关闭连接 - ProtocolClient接口实现
+   */
+  async close(): Promise<void> {
+    // HTTP是无状态协议，这里主要是清理资源
+    this.removeAllListeners();
+    this.cache.clear();
+
+    // 触发关闭事件
+    this.emit('close');
+  }
+
+  /**
+   * 将方法名映射为HTTP方法
+   * 这是一个启发式映射，可以根据实际需要调整
+   */
+  private mapMethodToHTTP(method: string): HTTPMethod {
+    const methodLower = method.toLowerCase();
+
+    // 常见的映射规则
+    if (methodLower.startsWith('get') || methodLower.startsWith('list') || methodLower.startsWith('find')) {
+      return 'GET';
+    } else if (methodLower.startsWith('create') || methodLower.startsWith('add')) {
+      return 'POST';
+    } else if (methodLower.startsWith('update') || methodLower.startsWith('modify')) {
+      return 'PUT';
+    } else if (methodLower.startsWith('patch')) {
+      return 'PATCH';
+    } else if (methodLower.startsWith('delete') || methodLower.startsWith('remove')) {
+      return 'DELETE';
+    }
+
+    // 默认使用POST
+    return 'POST';
+  }
+
+  /**
+   * 将HTTP错误转换为协议错误
+   */
+  private convertToProtocolError(error: any): Error {
+    if (error.response) {
+      // HTTP响应错误
+      const protocolError = new Error(`HTTP ${error.response.status}: ${error.response.statusText}`);
+      (protocolError as any).code = `HTTP_${error.response.status}`;
+      (protocolError as any).status = error.response.status;
+      (protocolError as any).data = error.response.data;
+      return protocolError;
+    } else if (error.request) {
+      // 网络错误
+      const protocolError = new Error('Network error: Request failed');
+      (protocolError as any).code = 'NETWORK_ERROR';
+      return protocolError;
+    } else {
+      // 其他错误
+      return error;
+    }
   }
 }

@@ -5,7 +5,7 @@
 
 import type { UDEFMessageImpl } from '../core/message.js';
 import type { SchemaRegistryOperations, Schema } from './schema-registry.js';
-import { type SkerString } from '@sker/core';
+import { type SkerString } from '@sker/types';
 
 export interface ValidationResult {
   valid: boolean;

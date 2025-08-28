@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "strict": true,
+    "noEmit": true,
+    "declaration": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "useDefineForClassFields": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "vitest/globals"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@sker/core": ["../packages/core/src"],
+      "@sker/protocol-http": ["../packages/protocol-http/src"],
+      "@sker/protocol-grpc": ["../packages/protocol-grpc/src"],
+      "@sker/protocol-websocket": ["../packages/protocol-websocket/src"],
+      "@sker/protocol-ucp": ["../packages/protocol-ucp/src"],
+      "@sker/serialization-json": ["../packages/serialization-json/src"],
+      "@sker/serialization-protobuf": ["../packages/serialization-protobuf/src"],
+      "@sker/data-udef": ["../packages/data-udef/src"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "vitest.config.ts",
+    "vitest.*.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    ".vitest"
+  ]
+}

@@ -3,26 +3,28 @@
  */
 
 import { EventEmitter } from 'events';
-import { Logger } from '@sker/logger';
-import { 
-  ClientConfig, 
-  WebSocketState, 
+import { Logger, deepMerge } from '@sker/core';
+import {
+  ClientConfig,
+  WebSocketState,
   Message,
-  ReconnectConfig 
+  ReconnectConfig
 } from '../types/websocket-types.js';
-import { 
-  DEFAULT_CLIENT_CONFIG, 
-  WebSocketEvent, 
+import {
+  DEFAULT_CLIENT_CONFIG,
+  WebSocketEvent,
   MessageTypes,
-  ERROR_MESSAGES 
+  ERROR_MESSAGES
 } from '../constants/websocket-constants.js';
 import { ClientEventEmitter } from '../events/event-emitter.js';
 import { MessageQueue, MessageFactory } from '../utils/message-utils.js';
-import { 
-  calculateReconnectDelay, 
-  deepMerge,
-  generateMessageId 
+import {
+  calculateReconnectDelay,
+  generateMessageId
 } from '../utils/websocket-utils.js';
+
+// 定义协议类型以实现接口对齐
+type ProtocolType = 'http' | 'grpc' | 'websocket' | 'ucp';
 
 export class WebSocketClient extends EventEmitter {
   private config: ClientConfig;
@@ -528,7 +530,161 @@ export class WebSocketClient extends EventEmitter {
         timestamp: new Date().toISOString()
       }
     };
-    
+
     await this.send(message);
+  }
+
+  // ========================================
+  // ProtocolClient接口实现 - 接口对齐
+  // ========================================
+
+  /**
+   * 协议类型 - ProtocolClient接口要求
+   */
+  get protocol(): ProtocolType {
+    return 'websocket' as ProtocolType;
+  }
+
+  /**
+   * 目标地址 - ProtocolClient接口要求
+   */
+  get target(): string {
+    return this.config.url || '';
+  }
+
+  /**
+   * 统一的RPC调用方法 - ProtocolClient接口实现
+   * 将WebSocket消息映射为RPC调用
+   *
+   * @param service 服务名称
+   * @param method 方法名称
+   * @param data 请求数据
+   * @param options 调用选项
+   */
+  async call(service: string, method: string, data: any, options?: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const messageId = generateMessageId();
+      const timeout = options?.timeout || 30000;
+
+      // 创建RPC消息
+      const rpcMessage = {
+        id: messageId,
+        type: 'rpc_call',
+        service,
+        method,
+        data,
+        timestamp: new Date().toISOString()
+      };
+
+      // 设置响应监听器
+      const responseHandler = (message: any) => {
+        if (message.id === messageId) {
+          this.off('message', responseHandler);
+          clearTimeout(timeoutHandle);
+
+          if (message.error) {
+            reject(new Error(message.error));
+          } else {
+            resolve(message.result);
+          }
+        }
+      };
+
+      // 设置超时处理
+      const timeoutHandle = setTimeout(() => {
+        this.off('message', responseHandler);
+        reject(new Error(`RPC call timeout: ${service}.${method}`));
+      }, timeout);
+
+      // 监听响应
+      this.on('message', responseHandler);
+
+      // 发送RPC调用
+      this.send(rpcMessage).catch(error => {
+        this.off('message', responseHandler);
+        clearTimeout(timeoutHandle);
+        reject(error);
+      });
+    });
+  }
+
+  /**
+   * 流式调用方法 - ProtocolClient接口实现
+   * WebSocket的流式实现
+   *
+   * @param service 服务名称
+   * @param method 方法名称
+   * @param data 请求数据
+   * @param options 流选项
+   */
+  async *stream(service: string, method: string, data: any, options?: any): AsyncIterableIterator<any> {
+    const streamId = generateMessageId();
+
+    // 创建流消息
+    const streamMessage = {
+      id: streamId,
+      type: 'stream_call',
+      service,
+      method,
+      data,
+      timestamp: new Date().toISOString()
+    };
+
+    // 创建流数据队列
+    const streamQueue: any[] = [];
+    let streamEnded = false;
+    let streamError: Error | null = null;
+
+    // 流数据处理器
+    const streamHandler = (message: any) => {
+      if (message.streamId === streamId) {
+        if (message.type === 'stream_data') {
+          streamQueue.push(message.data);
+        } else if (message.type === 'stream_end') {
+          streamEnded = true;
+        } else if (message.type === 'stream_error') {
+          streamError = new Error(message.error);
+          streamEnded = true;
+        }
+      }
+    };
+
+    // 监听流数据
+    this.on('message', streamHandler);
+
+    try {
+      // 发送流调用
+      await this.send(streamMessage);
+
+      // 生成流数据
+      while (!streamEnded) {
+        if (streamError) {
+          throw streamError;
+        }
+
+        if (streamQueue.length > 0) {
+          yield streamQueue.shift();
+        } else {
+          // 等待新数据
+          await new Promise(resolve => setTimeout(resolve, 10));
+        }
+      }
+
+      // 处理剩余数据
+      while (streamQueue.length > 0) {
+        yield streamQueue.shift();
+      }
+
+    } finally {
+      // 清理监听器
+      this.off('message', streamHandler);
+    }
+  }
+
+  /**
+   * 关闭连接 - ProtocolClient接口实现
+   */
+  async close(): Promise<void> {
+    await this.disconnect();
   }
 }

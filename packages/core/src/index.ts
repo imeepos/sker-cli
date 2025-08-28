@@ -4,31 +4,176 @@ export { EventBus } from './events/index.js';
 
 export { ConfigManager } from './config/index.js';
 
-export { 
-  LifecycleManager, 
-  LifecycleState 
+export {
+  LifecycleManager,
+  LifecycleState
 } from './lifecycle/index.js';
 
 export { PluginManager } from './plugins/index.js';
 
 export { MiddlewareManager } from './middleware/index.js';
 
-export { 
-  Context, 
-  withContext, 
-  withCurrentContext, 
-  getCurrentContext, 
-  ensureContext 
+export {
+  Context,
+  withContext,
+  withCurrentContext,
+  getCurrentContext,
+  ensureContext
 } from './context/index.js';
 
-export { 
-  SkerError, 
-  ErrorCodes, 
-  createError, 
-  isError, 
-  isSkerError, 
-  wrapError 
+export {
+  SkerError,
+  ErrorCodes,
+  createError,
+  isError,
+  isSkerError,
+  wrapError
 } from './errors/index.js';
+
+// Re-export logger functionality from @sker/logger
+export {
+  Logger,
+  CoreLogger,
+  TracingLogger,
+  PerformanceLogger,
+  LogLevel,
+  LogFormat,
+  createLogger,
+  createDevelopmentLogger,
+  createTestLogger,
+  createStructuredLogger
+} from '@sker/logger';
+
+export type {
+  LogEntry,
+  LoggerConfig,
+  ServiceInfo,
+  LogContext,
+  LogMetadata,
+  TraceContext,
+  Span,
+  TracingConfig,
+  PerformanceConfig,
+  OutputConfig,
+  OutputAdapter,
+  BatchOutputAdapter,
+  LogFilter,
+  ContextProvider,
+  MetricValue,
+  PerformanceMetrics,
+  MonitoringDecorator,
+  ErrorReportingConfig,
+  LoggerMiddlewareConfig,
+  CoreLoggerOptions,
+  StructuredLogData,
+  LogProcessor,
+  TracingProcessor,
+  PerformanceProcessor,
+  SecurityProcessor,
+  EnhancedOutputConfig
+} from '@sker/logger';
+
+// Re-export utility functions from @sker/utils
+export {
+  // String utilities
+  camelCase,
+  snakeCase,
+  kebabCase,
+  truncate,
+  maskString,
+  isValidEmail,
+  isValidUrl,
+  capitalize,
+  pascalCase,
+  escapeHtml,
+  unescapeHtml,
+  // Object utilities
+  deepClone,
+  deepMerge,
+  getPath,
+  setPath,
+  omit,
+  pick,
+  isEmpty,
+  isEqual,
+  // Array utilities
+  chunk,
+  flatten,
+  uniq,
+  uniqBy,
+  groupBy,
+  sortBy,
+  partition,
+  sample,
+  sampleSize,
+  shuffle,
+  zip,
+  zipWith,
+  intersection,
+  difference,
+  union,
+  // Async utilities
+  delay,
+  timeout,
+  retry,
+  debounce,
+  throttle,
+  promiseAll,
+  promiseAllSettled,
+  race,
+  safeAsync,
+  AsyncQueue,
+  // Validation utilities
+  isValidUUID,
+  isValidJSON,
+  isValidDate,
+  isValidPhoneNumber,
+  validateSchema,
+  sanitizeInput,
+  sanitizeSQL,
+  isValidCreditCard,
+  isValidIPAddress,
+  // Crypto utilities
+  generateUUID,
+  generateNonce,
+  hashString,
+  encodeBase64,
+  decodeBase64,
+  encodeUrl,
+  decodeUrl,
+  generateSecurePassword,
+  generateSalt,
+  pbkdf2,
+  // Time utilities
+  formatDate,
+  parseDate,
+  addTime,
+  subtractTime,
+  diffTime,
+  isExpired,
+  getTimezone,
+  convertTimezone,
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  isLeapYear,
+  getDaysInMonth,
+  getWeekOfYear,
+  formatRelativeTime
+} from '@sker/utils';
+
+export type {
+  RetryOptions,
+  PromiseAllOptions,
+  SettledResult,
+  SchemaField,
+  ValidationResult,
+  TimeUnit,
+  TimeDiff
+} from '@sker/utils';
 
 export type {
   CoreOptions,

@@ -15,6 +15,9 @@ import { ServiceDiscovery } from './service-discovery.js';
 import { LoadBalancer } from '../balancer/load-balancer.js';
 import { ConnectionPool } from './connection-pool.js';
 
+// 定义协议类型以实现接口对齐
+type ProtocolType = 'http' | 'grpc' | 'websocket' | 'ucp';
+
 export interface ServiceClient {
   [methodName: string]: (...args: any[]) => Promise<any> | AsyncGenerator<any>;
 }
@@ -85,7 +88,7 @@ export class GRPCClient extends EventEmitter {
   /**
    * 断开连接
    */
-  async close(): Promise<void> {
+  async disconnect(): Promise<void> {
     if (!this.isConnected) {
       return;
     }
@@ -331,6 +334,153 @@ export class GRPCClient extends EventEmitter {
         warmupConnections: 3,
         warmupTimeout: 5000
       });
+    }
+  }
+
+  // ========================================
+  // ProtocolClient接口实现 - 接口对齐
+  // ========================================
+
+  /**
+   * 协议类型 - ProtocolClient接口要求
+   */
+  get protocol(): ProtocolType {
+    return 'grpc' as ProtocolType;
+  }
+
+  /**
+   * 目标地址 - ProtocolClient接口要求
+   */
+  get target(): string {
+    return this.config.target || '';
+  }
+
+  /**
+   * 统一的RPC调用方法 - ProtocolClient接口实现
+   * gRPC本身就是RPC协议，直接映射
+   *
+   * @param service 服务名称
+   * @param method 方法名称
+   * @param data 请求数据
+   * @param options 调用选项
+   */
+  async call(service: string, method: string, data: any, options?: any): Promise<any> {
+    try {
+      // 获取或创建服务客户端
+      const serviceClient = await this.getServiceClient(service);
+
+      // 调用指定方法
+      if (typeof serviceClient[method] === 'function') {
+        const result = await serviceClient[method](data, options);
+        return result;
+      } else {
+        throw new Error(`Method ${method} not found in service ${service}`);
+      }
+    } catch (error) {
+      throw this.convertToProtocolError(error);
+    }
+  }
+
+  /**
+   * 流式调用方法 - ProtocolClient接口实现
+   * gRPC原生支持流式调用
+   *
+   * @param service 服务名称
+   * @param method 方法名称
+   * @param data 请求数据
+   * @param options 流选项
+   */
+  async *stream(service: string, method: string, data: any, options?: any): AsyncIterableIterator<any> {
+    try {
+      // 获取或创建服务客户端
+      const serviceClient = await this.getServiceClient(service);
+
+      // 调用流式方法
+      if (typeof serviceClient[method] === 'function') {
+        const stream = serviceClient[method](data, options);
+
+        // 如果返回的是AsyncGenerator，直接yield
+        if (stream && typeof (stream as any)[Symbol.asyncIterator] === 'function') {
+          for await (const item of stream as AsyncIterable<any>) {
+            yield item;
+          }
+        } else {
+          // 如果是Promise，等待结果并yield
+          const result = await stream;
+          yield result;
+        }
+      } else {
+        throw new Error(`Stream method ${method} not found in service ${service}`);
+      }
+    } catch (error) {
+      throw this.convertToProtocolError(error);
+    }
+  }
+
+  /**
+   * 关闭连接 - ProtocolClient接口实现
+   */
+  async close(): Promise<void> {
+    if (!this.isConnected) {
+      return;
+    }
+
+    try {
+      if (this.connectionPool) {
+        await this.connectionPool.close();
+      }
+
+      if (this.serviceDiscovery) {
+        await this.serviceDiscovery.stop();
+      }
+
+      this.services.clear();
+      this.isConnected = false;
+      this.emit('client:disconnected');
+    } catch (error) {
+      this.emit('client:error', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取服务客户端
+   */
+  private async getServiceClient(serviceName: string): Promise<ServiceClient> {
+    let serviceClient = this.services.get(serviceName);
+
+    if (!serviceClient) {
+      // 如果服务客户端不存在，创建一个基本的代理
+      serviceClient = new Proxy({}, {
+        get: (target, prop: string) => {
+          return async (data: any, options?: any) => {
+            // 这里应该实现实际的gRPC调用逻辑
+            // 当前是一个占位符实现
+            throw new Error(`gRPC call not implemented: ${serviceName}.${prop}`);
+          };
+        }
+      });
+
+      this.services.set(serviceName, serviceClient);
+    }
+
+    return serviceClient;
+  }
+
+  /**
+   * 将gRPC错误转换为协议错误
+   */
+  private convertToProtocolError(error: any): Error {
+    if (error.code !== undefined) {
+      // gRPC错误
+      const protocolError = new Error(`gRPC ${error.code}: ${error.details || error.message}`);
+      (protocolError as any).code = `GRPC_${error.code}`;
+      (protocolError as any).status = error.code;
+      (protocolError as any).details = error.details;
+      return protocolError;
+    } else {
+      // 其他错误
+      return error;
     }
   }
 }

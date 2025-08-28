@@ -5,7 +5,7 @@
 
 import type { UDEFMessageImpl } from '../core/message.js';
 import { MessageFactory } from '../core/message.js';
-import { type SkerString } from '@sker/core';
+import { type SkerString } from '@sker/types';
 
 export interface MigrationRule {
   from_version: SkerString;

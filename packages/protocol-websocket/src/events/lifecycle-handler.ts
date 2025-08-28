@@ -2,7 +2,7 @@
  * @sker/protocol-websocket - 生命周期处理器
  */
 
-import { Logger } from '@sker/logger';
+import { Logger } from '@sker/core';
 import { WebSocketConnection, User } from '../types/websocket-types.js';
 import { WebSocketEvent, MessageTypes, WebSocketCloseCode } from '../constants/websocket-constants.js';
 import { WebSocketEventEmitter } from './event-emitter.js';

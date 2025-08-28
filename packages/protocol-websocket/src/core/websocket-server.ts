@@ -2,11 +2,10 @@
  * @sker/protocol-websocket - WebSocket服务器核心实现
  */
 
-import { SkerCore, MiddlewareContext } from '@sker/core';
+import { SkerCore, MiddlewareContext, Logger, deepMerge } from '@sker/core';
 import { EventEmitter } from 'events';
 import { Server } from 'http';
 import { WebSocketServer as WSServer } from 'ws';
-import { Logger } from '@sker/logger';
 import {
   ServerConfig,
   WebSocketConnection,
@@ -29,7 +28,6 @@ import { DefaultMessageHandler } from '../events/message-handler.js';
 import { LifecycleHandler } from '../events/lifecycle-handler.js';
 import {
   generateConnectionId,
-  deepMerge,
   formatConnectionInfo,
   parseUserAgent
 } from '../utils/websocket-utils.js';

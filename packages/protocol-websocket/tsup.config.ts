@@ -8,12 +8,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   external: [
-    '@sker/types',
-    '@sker/constants', 
-    '@sker/utils',
-    '@sker/logger',
-    '@sker/error-core',
-    '@sker/protocol-ucp',
+    '@sker/core',
     '@sker/serialization-json'
   ],
   outDir: 'dist',

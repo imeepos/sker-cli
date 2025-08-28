@@ -3,13 +3,13 @@
  */
 
 import { randomBytes, createHash } from 'crypto';
-import { generateUUID } from '@sker/utils';
-import { 
-  WebSocketConnection, 
-  Message, 
+import { generateUUID } from '@sker/core';
+import {
+  WebSocketConnection,
+  Message,
   User,
   WebSocketState,
-  CompressionAlgorithm 
+  CompressionAlgorithm
 } from '../types/websocket-types.js';
 import { SYSTEM, REGEX } from '../constants/websocket-constants.js';
 
